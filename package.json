@@ -1,8 +1,8 @@
 {
-  "name": "adminjs-v7-with-nestjs",
+  "name": "selfcoach-backend",
   "version": "0.0.1",
   "description": "",
-  "author": "Rafał Dzięgielewski <rafal.dzieg@gmail.com>",
+  "author": "Adenle Abiodun <adenleabbey@gmail.com>",
   "private": true,
   "license": "MIT",
   "scripts": {
