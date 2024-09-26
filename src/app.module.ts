@@ -41,7 +41,7 @@ const authenticate = async (email: string, password: string) => {
       port: 5432,
       username: 'postgres',
       password: 'password',
-      database: 'adminjs',
+      database: 'selfcoach-db',
       entities: [User, HealthMetric],
       synchronize: true,
     }),
