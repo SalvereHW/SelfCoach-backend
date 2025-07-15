@@ -1,33 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcryptjs';
-import * as speakeasy from 'speakeasy';
-import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service.js';
+import { Injectable, Logger } from '@nestjs/common';
+import * as NodeCache from 'node-cache';
+import { UserService } from '../user/user.service.js';
+import { JwtService } from './jwt.service.js';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly userService: UserService,
-  ) {}
+    private readonly logger = new Logger(AuthService.name);
+    private userCache = new NodeCache.default({ stdTTL: 300 }); // Cache users for 5 minutes
 
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.userService.findUserByEmail(email);
-    if (user && bcrypt.compareSync(password, user.password)) {
-      return user;
+    constructor(
+      private jwtService: JwtService,
+      private userService: UserService,
+    ) {}
+
+    async validateUser(token: string) {
+      const payload = await this.jwtService.validateSupabaseToken(token);
+
+      // Check cache first
+      const cacheKey = `user_${payload.sub}`;
+      let user = this.userCache.get(cacheKey);
+
+      if (!user) {
+        user = await this.userService.findUserBySupabaseId(payload.sub);
+        if (user) {
+          this.userCache.set(cacheKey, user);
+        }
+      }
+
+      return { user, payload };
     }
-    return null;
-  }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
-    return {
-      access_token: this.jwtService.sign(payload),
-      mfa_secret: speakeasy.generateSecret(), // Generate MFA secret
-    };
+    invalidateUserCache(userId: string) {
+      this.userCache.del(`user_${userId}`);
+    }
   }
-
-  async verifyMFA(token: string, secret: string): Promise<boolean> {
-    return speakeasy.totp.verify({ secret, encoding: 'base32', token });
-  }
-}
