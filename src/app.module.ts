@@ -25,6 +25,7 @@ import { SessionProgress } from './wellness/entities/session-progress.entity.js'
 import { LoggingModule } from './common/logging/logging.module.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { AuthModule } from './auth/auth.module.js';
+import { ConfigService } from '@nestjs/config';
 
 // AdminJS.registerAdapter({
 //   Resource: AdminJSTypeorm.Resource,
@@ -49,18 +50,23 @@ const authenticate = async (email: string, password: string) => {
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'password',
-      database: 'selfcoach-db',
-      entities: [User, SleepMetric, NutritionMetric, ActivityMetric, DailySummary, Reminder, ReminderAction, WellnessSession, SessionProgress],
-      synchronize: true,
-    }),
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      isGlobal: true,
+      envFilePath: ['.env'],
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DATABASE_HOST'),
+        port: configService.get('DATABASE_PORT'),
+        username: configService.get('DATABASE_USERNAME'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE_NAME'),
+        entities: [User, SleepMetric, NutritionMetric, ActivityMetric, DailySummary, Reminder, ReminderAction, WellnessSession, SessionProgress],
+        synchronize: true,
+      }),
     }),
     // AdminModule.createAdminAsync({
     //   useFactory: async () => {
