@@ -15,7 +15,7 @@ export enum ReminderActionType {
   COMPLETED = 'completed',
   DISMISSED = 'dismissed',
   SNOOZED = 'snoozed',
-  TRIGGERED = 'triggered'
+  TRIGGERED = 'triggered',
 }
 
 @Entity('reminder_actions')
@@ -30,7 +30,7 @@ export class ReminderAction extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ReminderActionType
+    enum: ReminderActionType,
   })
   actionType: ReminderActionType;
 
@@ -46,7 +46,9 @@ export class ReminderAction extends BaseEntity {
   @Column()
   userId: number;
 
-  @ManyToOne(() => Reminder, (reminder) => reminder.actions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Reminder, (reminder) => reminder.actions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'reminderId' })
   reminder: Promise<Reminder>;
 

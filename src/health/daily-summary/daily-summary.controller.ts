@@ -26,7 +26,7 @@ export class DailySummaryController {
   @Post()
   create(
     @Body() createDailySummaryDto: CreateDailySummaryDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.dailySummaryService.create(req.user.id, createDailySummaryDto);
   }
@@ -34,7 +34,7 @@ export class DailySummaryController {
   @Post('upsert')
   upsert(
     @Body() createDailySummaryDto: CreateDailySummaryDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.dailySummaryService.upsert(req.user.id, createDailySummaryDto);
   }
@@ -44,23 +44,25 @@ export class DailySummaryController {
     @Request() req: AuthenticatedRequest,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: number,
   ) {
-    return this.dailySummaryService.findAll(req.user.id, startDate, endDate, limit);
+    return this.dailySummaryService.findAll(
+      req.user.id,
+      startDate,
+      endDate,
+      limit,
+    );
   }
 
   @Get('stats')
-  getStats(
-    @Request() req: AuthenticatedRequest,
-    @Query('days') days?: number
-  ) {
+  getStats(@Request() req: AuthenticatedRequest, @Query('days') days?: number) {
     return this.dailySummaryService.getStats(req.user.id, days);
   }
 
   @Get('date/:date')
   findByDate(
     @Param('date') date: string,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.dailySummaryService.findByDate(req.user.id, date);
   }
@@ -68,7 +70,7 @@ export class DailySummaryController {
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.dailySummaryService.findOne(id, req.user.id);
   }
@@ -77,16 +79,20 @@ export class DailySummaryController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDailySummaryDto: UpdateDailySummaryDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.dailySummaryService.update(id, req.user.id, updateDailySummaryDto);
+    return this.dailySummaryService.update(
+      id,
+      req.user.id,
+      updateDailySummaryDto,
+    );
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.dailySummaryService.remove(id, req.user.id);
   }

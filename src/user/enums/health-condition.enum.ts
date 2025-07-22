@@ -25,5 +25,5 @@ export enum HealthCondition {
   GERD = 'gerd',
   IBS = 'ibs',
   ALLERGIES = 'allergies',
-  NONE = 'none'
+  NONE = 'none',
 }

@@ -16,7 +16,7 @@ export enum MoodLevel {
   SAD = 2,
   NEUTRAL = 3,
   HAPPY = 4,
-  VERY_HAPPY = 5
+  VERY_HAPPY = 5,
 }
 
 export enum StressLevel {
@@ -24,7 +24,7 @@ export enum StressLevel {
   LOW = 2,
   MODERATE = 3,
   HIGH = 4,
-  VERY_HIGH = 5
+  VERY_HIGH = 5,
 }
 
 export enum EnergyLevel {
@@ -32,7 +32,7 @@ export enum EnergyLevel {
   LOW = 2,
   MODERATE = 3,
   HIGH = 4,
-  VERY_HIGH = 5
+  VERY_HIGH = 5,
 }
 
 @Entity('daily_summaries')
@@ -47,21 +47,21 @@ export class DailySummary extends BaseEntity {
   @Column({
     type: 'enum',
     enum: MoodLevel,
-    nullable: true
+    nullable: true,
   })
   mood: MoodLevel;
 
   @Column({
     type: 'enum',
     enum: StressLevel,
-    nullable: true
+    nullable: true,
   })
   stressLevel: StressLevel;
 
   @Column({
     type: 'enum',
     enum: EnergyLevel,
-    nullable: true
+    nullable: true,
   })
   energyLevel: EnergyLevel;
 
@@ -96,9 +96,10 @@ export class DailySummary extends BaseEntity {
   // Virtual properties for analytics
   get wellnessScore(): number | null {
     const scores = [];
-    
+
     if (this.mood !== null && this.mood !== undefined) scores.push(this.mood);
-    if (this.energyLevel !== null && this.energyLevel !== undefined) scores.push(this.energyLevel);
+    if (this.energyLevel !== null && this.energyLevel !== undefined)
+      scores.push(this.energyLevel);
     if (this.stressLevel !== null && this.stressLevel !== undefined) {
       // Invert stress level (lower stress = higher score)
       scores.push(6 - this.stressLevel);
@@ -111,14 +112,19 @@ export class DailySummary extends BaseEntity {
   }
 
   get bloodPressureCategory(): string | null {
-    if (!this.bloodPressureSystolic || !this.bloodPressureDiastolic) return null;
+    if (!this.bloodPressureSystolic || !this.bloodPressureDiastolic)
+      return null;
 
     const systolic = this.bloodPressureSystolic;
     const diastolic = this.bloodPressureDiastolic;
 
     if (systolic < 120 && diastolic < 80) return 'Normal';
     if (systolic < 130 && diastolic < 80) return 'Elevated';
-    if ((systolic >= 130 && systolic < 140) || (diastolic >= 80 && diastolic < 90)) return 'Stage 1 Hypertension';
+    if (
+      (systolic >= 130 && systolic < 140) ||
+      (diastolic >= 80 && diastolic < 90)
+    )
+      return 'Stage 1 Hypertension';
     if (systolic >= 140 || diastolic >= 90) return 'Stage 2 Hypertension';
     if (systolic > 180 || diastolic > 120) return 'Hypertensive Crisis';
 

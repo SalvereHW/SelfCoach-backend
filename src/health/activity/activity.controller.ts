@@ -27,7 +27,7 @@ export class ActivityController {
   @Post()
   create(
     @Body() createActivityMetricDto: CreateActivityMetricDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.activityService.create(req.user.id, createActivityMetricDto);
   }
@@ -38,23 +38,26 @@ export class ActivityController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('activityType') activityType?: ActivityType,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: number,
   ) {
-    return this.activityService.findAll(req.user.id, startDate, endDate, activityType, limit);
+    return this.activityService.findAll(
+      req.user.id,
+      startDate,
+      endDate,
+      activityType,
+      limit,
+    );
   }
 
   @Get('stats')
-  getStats(
-    @Request() req: AuthenticatedRequest,
-    @Query('days') days?: number
-  ) {
+  getStats(@Request() req: AuthenticatedRequest, @Query('days') days?: number) {
     return this.activityService.getStats(req.user.id, days);
   }
 
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.activityService.findOne(id, req.user.id);
   }
@@ -63,16 +66,20 @@ export class ActivityController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateActivityMetricDto: UpdateActivityMetricDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.activityService.update(id, req.user.id, updateActivityMetricDto);
+    return this.activityService.update(
+      id,
+      req.user.id,
+      updateActivityMetricDto,
+    );
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.activityService.remove(id, req.user.id);
   }

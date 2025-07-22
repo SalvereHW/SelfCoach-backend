@@ -1,5 +1,19 @@
-import { IsString, IsOptional, IsEnum, IsDateString, IsBoolean, IsArray, IsNumber, IsObject, Min, Max } from 'class-validator';
-import { ReminderType, ReminderFrequency } from '../entities/reminder.entity.js';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsBoolean,
+  IsArray,
+  IsNumber,
+  IsObject,
+  Min,
+  Max,
+} from 'class-validator';
+import {
+  ReminderType,
+  ReminderFrequency,
+} from '../entities/reminder.entity.js';
 
 export class CreateReminderDto {
   @IsString()

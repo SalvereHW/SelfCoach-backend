@@ -1,5 +1,18 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsBoolean, IsArray, IsObject, Min, Max } from 'class-validator';
-import { SessionType, SessionDifficulty } from '../entities/wellness-session.entity.js';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  IsObject,
+  Min,
+  Max,
+} from 'class-validator';
+import {
+  SessionType,
+  SessionDifficulty,
+} from '../entities/wellness-session.entity.js';
 
 export class CreateWellnessSessionDto {
   @IsString()

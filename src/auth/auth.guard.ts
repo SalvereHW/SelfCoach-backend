@@ -14,7 +14,6 @@ export interface AuthenticatedRequest extends Request {
   payload: any;
 }
 
-
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);

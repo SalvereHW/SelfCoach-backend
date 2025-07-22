@@ -21,13 +21,13 @@ export enum SessionType {
   ANXIETY_RELIEF = 'anxiety_relief',
   MOTIVATION = 'motivation',
   GRATITUDE = 'gratitude',
-  VISUALIZATION = 'visualization'
+  VISUALIZATION = 'visualization',
 }
 
 export enum SessionDifficulty {
   BEGINNER = 'beginner',
   INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced'
+  ADVANCED = 'advanced',
 }
 
 @Entity('wellness_sessions')
@@ -45,7 +45,7 @@ export class WellnessSession extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: SessionType
+    enum: SessionType,
   })
   type: SessionType;
 
@@ -55,7 +55,7 @@ export class WellnessSession extends BaseEntity {
   @Column({
     type: 'enum',
     enum: SessionDifficulty,
-    default: SessionDifficulty.BEGINNER
+    default: SessionDifficulty.BEGINNER,
   })
   difficulty: SessionDifficulty;
 
@@ -116,10 +116,14 @@ export class WellnessSession extends BaseEntity {
 
   get difficultyLevel(): number {
     switch (this.difficulty) {
-      case SessionDifficulty.BEGINNER: return 1;
-      case SessionDifficulty.INTERMEDIATE: return 2;
-      case SessionDifficulty.ADVANCED: return 3;
-      default: return 1;
+      case SessionDifficulty.BEGINNER:
+        return 1;
+      case SessionDifficulty.INTERMEDIATE:
+        return 2;
+      case SessionDifficulty.ADVANCED:
+        return 3;
+      default:
+        return 1;
     }
   }
 

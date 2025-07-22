@@ -24,5 +24,5 @@ export enum CulturalDiet {
   WHOLE30 = 'whole30',
   DASH = 'dash',
   FLEXITARIAN = 'flexitarian',
-  NO_PREFERENCE = 'no_preference'
+  NO_PREFERENCE = 'no_preference',
 }

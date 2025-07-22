@@ -1,4 +1,14 @@
-import { IsEnum, IsString, IsOptional, IsNumber, IsArray, IsBoolean, IsDateString, Min, Max } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  Min,
+  Max,
+} from 'class-validator';
 import { InsightType, InsightPriority } from '../entities/ai-insight.entity.js';
 
 export class CreateAiInsightDto {

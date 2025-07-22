@@ -21,7 +21,7 @@ export enum ReminderType {
   WATER = 'water',
   HEALTH_CHECK = 'health_check',
   APPOINTMENT = 'appointment',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 export enum ReminderFrequency {
@@ -29,7 +29,7 @@ export enum ReminderFrequency {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 export enum ReminderStatus {
@@ -37,7 +37,7 @@ export enum ReminderStatus {
   SNOOZED = 'snoozed',
   COMPLETED = 'completed',
   DISMISSED = 'dismissed',
-  INACTIVE = 'inactive'
+  INACTIVE = 'inactive',
 }
 
 @Entity('reminders')
@@ -55,7 +55,7 @@ export class Reminder extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ReminderType
+    enum: ReminderType,
   })
   type: ReminderType;
 
@@ -65,14 +65,14 @@ export class Reminder extends BaseEntity {
   @Column({
     type: 'enum',
     enum: ReminderFrequency,
-    default: ReminderFrequency.ONCE
+    default: ReminderFrequency.ONCE,
   })
   frequency: ReminderFrequency;
 
   @Column({
     type: 'enum',
     enum: ReminderStatus,
-    default: ReminderStatus.ACTIVE
+    default: ReminderStatus.ACTIVE,
   })
   status: ReminderStatus;
 
@@ -160,33 +160,41 @@ export class Reminder extends BaseEntity {
     const scheduled = new Date(this.scheduledTime);
 
     // Find next occurrence this week
-    const todayWeekdays = this.weekdays.filter(day => day > currentDay);
+    const todayWeekdays = this.weekdays.filter((day) => day > currentDay);
     if (todayWeekdays.length > 0) {
       const nextDay = Math.min(...todayWeekdays);
       const daysToAdd = nextDay - currentDay;
       const nextDate = new Date(now);
       nextDate.setDate(now.getDate() + daysToAdd);
-      nextDate.setHours(scheduled.getHours(), scheduled.getMinutes(), scheduled.getSeconds());
+      nextDate.setHours(
+        scheduled.getHours(),
+        scheduled.getMinutes(),
+        scheduled.getSeconds(),
+      );
       return nextDate;
     }
 
     // Find first occurrence next week
     const nextWeekDay = Math.min(...this.weekdays);
-    const daysToAdd = (7 - currentDay) + nextWeekDay;
+    const daysToAdd = 7 - currentDay + nextWeekDay;
     const nextDate = new Date(now);
     nextDate.setDate(now.getDate() + daysToAdd);
-    nextDate.setHours(scheduled.getHours(), scheduled.getMinutes(), scheduled.getSeconds());
+    nextDate.setHours(
+      scheduled.getHours(),
+      scheduled.getMinutes(),
+      scheduled.getSeconds(),
+    );
     return nextDate;
   }
 
   shouldTrigger(): boolean {
     if (!this.isActive || this.isSnoozed) return false;
-    
+
     const now = new Date();
     const nextTime = this.nextScheduledTime;
-    
+
     if (!nextTime) return false;
-    
+
     // Trigger if we're within 1 minute of scheduled time
     const timeDiff = Math.abs(now.getTime() - nextTime.getTime());
     return timeDiff <= 60000; // 1 minute tolerance

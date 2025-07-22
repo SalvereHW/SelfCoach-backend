@@ -17,14 +17,14 @@ export enum InsightType {
   HEALTH_TREND = 'health_trend',
   RECOMMENDATION = 'recommendation',
   ANOMALY_DETECTION = 'anomaly_detection',
-  GOAL_PROGRESS = 'goal_progress'
+  GOAL_PROGRESS = 'goal_progress',
 }
 
 export enum InsightPriority {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  URGENT = 'urgent'
+  URGENT = 'urgent',
 }
 
 @Entity('ai_insights')
@@ -36,7 +36,7 @@ export class AiInsight extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: InsightType
+    enum: InsightType,
   })
   type: InsightType;
 
@@ -49,7 +49,7 @@ export class AiInsight extends BaseEntity {
   @Column({
     type: 'enum',
     enum: InsightPriority,
-    default: InsightPriority.MEDIUM
+    default: InsightPriority.MEDIUM,
   })
   priority: InsightPriority;
 
@@ -97,23 +97,35 @@ export class AiInsight extends BaseEntity {
 
   get categoryColor(): string {
     switch (this.type) {
-      case InsightType.DAILY_SUMMARY: return '#4F46E5';
-      case InsightType.WEEKLY_SUMMARY: return '#7C3AED';
-      case InsightType.HEALTH_TREND: return '#059669';
-      case InsightType.RECOMMENDATION: return '#DC2626';
-      case InsightType.ANOMALY_DETECTION: return '#EA580C';
-      case InsightType.GOAL_PROGRESS: return '#0284C7';
-      default: return '#6B7280';
+      case InsightType.DAILY_SUMMARY:
+        return '#4F46E5';
+      case InsightType.WEEKLY_SUMMARY:
+        return '#7C3AED';
+      case InsightType.HEALTH_TREND:
+        return '#059669';
+      case InsightType.RECOMMENDATION:
+        return '#DC2626';
+      case InsightType.ANOMALY_DETECTION:
+        return '#EA580C';
+      case InsightType.GOAL_PROGRESS:
+        return '#0284C7';
+      default:
+        return '#6B7280';
     }
   }
 
   get priorityColor(): string {
     switch (this.priority) {
-      case InsightPriority.LOW: return '#10B981';
-      case InsightPriority.MEDIUM: return '#F59E0B';
-      case InsightPriority.HIGH: return '#EF4444';
-      case InsightPriority.URGENT: return '#DC2626';
-      default: return '#6B7280';
+      case InsightPriority.LOW:
+        return '#10B981';
+      case InsightPriority.MEDIUM:
+        return '#F59E0B';
+      case InsightPriority.HIGH:
+        return '#EF4444';
+      case InsightPriority.URGENT:
+        return '#DC2626';
+      default:
+        return '#6B7280';
     }
   }
 }

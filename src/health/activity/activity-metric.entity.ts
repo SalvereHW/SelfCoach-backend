@@ -24,21 +24,21 @@ export enum ActivityType {
   PILATES = 'pilates',
   DANCE = 'dance',
   HIKING = 'hiking',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 export enum ActivityIntensity {
   LOW = 'low',
   MODERATE = 'moderate',
   HIGH = 'high',
-  VERY_HIGH = 'very_high'
+  VERY_HIGH = 'very_high',
 }
 
 export enum DistanceUnit {
   KILOMETERS = 'kilometers',
   MILES = 'miles',
   METERS = 'meters',
-  YARDS = 'yards'
+  YARDS = 'yards',
 }
 
 @Entity('activity_metrics')
@@ -52,7 +52,7 @@ export class ActivityMetric extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ActivityType
+    enum: ActivityType,
   })
   activityType: ActivityType;
 
@@ -64,7 +64,7 @@ export class ActivityMetric extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ActivityIntensity
+    enum: ActivityIntensity,
   })
   intensity: ActivityIntensity;
 
@@ -77,7 +77,7 @@ export class ActivityMetric extends BaseEntity {
   @Column({
     type: 'enum',
     enum: DistanceUnit,
-    nullable: true
+    nullable: true,
   })
   distanceUnit: DistanceUnit;
 
@@ -109,24 +109,29 @@ export class ActivityMetric extends BaseEntity {
   // Virtual properties for calculations
   get intensityScore(): number {
     switch (this.intensity) {
-      case ActivityIntensity.LOW: return 1;
-      case ActivityIntensity.MODERATE: return 2;
-      case ActivityIntensity.HIGH: return 3;
-      case ActivityIntensity.VERY_HIGH: return 4;
-      default: return 0;
+      case ActivityIntensity.LOW:
+        return 1;
+      case ActivityIntensity.MODERATE:
+        return 2;
+      case ActivityIntensity.HIGH:
+        return 3;
+      case ActivityIntensity.VERY_HIGH:
+        return 4;
+      default:
+        return 0;
     }
   }
 
   get pace(): number | null {
     if (!this.distance || !this.duration || this.duration === 0) return null;
-    
+
     // Return pace as minutes per kilometer or mile
     return Number((this.duration / this.distance).toFixed(2));
   }
 
   get averageSpeed(): number | null {
     if (!this.distance || !this.duration || this.duration === 0) return null;
-    
+
     // Return speed as distance per hour
     const hours = this.duration / 60;
     return Number((this.distance / hours).toFixed(2));
@@ -138,7 +143,7 @@ export class ActivityMetric extends BaseEntity {
     const baseMET = this.getBaseMETValue();
     const intensityMultiplier = this.getIntensityMultiplier();
     const estimatedWeight = 70; // Default weight in kg
-    
+
     // Calories = MET × weight (kg) × time (hours)
     const hours = this.duration / 60;
     return Math.round(baseMET * intensityMultiplier * estimatedWeight * hours);
@@ -146,25 +151,39 @@ export class ActivityMetric extends BaseEntity {
 
   private getBaseMETValue(): number {
     switch (this.activityType) {
-      case ActivityType.WALKING: return 3.5;
-      case ActivityType.RUNNING: return 8.0;
-      case ActivityType.CYCLING: return 6.0;
-      case ActivityType.SWIMMING: return 7.0;
-      case ActivityType.STRENGTH: return 4.5;
-      case ActivityType.YOGA: return 2.5;
-      case ActivityType.DANCE: return 5.0;
-      case ActivityType.HIKING: return 6.0;
-      default: return 4.0;
+      case ActivityType.WALKING:
+        return 3.5;
+      case ActivityType.RUNNING:
+        return 8.0;
+      case ActivityType.CYCLING:
+        return 6.0;
+      case ActivityType.SWIMMING:
+        return 7.0;
+      case ActivityType.STRENGTH:
+        return 4.5;
+      case ActivityType.YOGA:
+        return 2.5;
+      case ActivityType.DANCE:
+        return 5.0;
+      case ActivityType.HIKING:
+        return 6.0;
+      default:
+        return 4.0;
     }
   }
 
   private getIntensityMultiplier(): number {
     switch (this.intensity) {
-      case ActivityIntensity.LOW: return 0.8;
-      case ActivityIntensity.MODERATE: return 1.0;
-      case ActivityIntensity.HIGH: return 1.3;
-      case ActivityIntensity.VERY_HIGH: return 1.6;
-      default: return 1.0;
+      case ActivityIntensity.LOW:
+        return 0.8;
+      case ActivityIntensity.MODERATE:
+        return 1.0;
+      case ActivityIntensity.HIGH:
+        return 1.3;
+      case ActivityIntensity.VERY_HIGH:
+        return 1.6;
+      default:
+        return 1.0;
     }
   }
 }

@@ -5,26 +5,17 @@ import { AuthGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 import { JwtService } from './jwt.service.js';
 
-
 @Module({
-  imports: [
-    ConfigModule, 
-    forwardRef(() => UserModule),
-  ],
+  imports: [ConfigModule, forwardRef(() => UserModule)],
   providers: [
     {
       provide: 'AUTH_GUARD',
       useClass: AuthGuard,
     },
     AuthGuard,
-    AuthService, 
+    AuthService,
     JwtService,
   ],
-  exports: [
-    'AUTH_GUARD',
-    AuthGuard,
-    AuthService, 
-    JwtService,
-  ],
+  exports: ['AUTH_GUARD', AuthGuard, AuthService, JwtService],
 })
 export class AuthModule {}

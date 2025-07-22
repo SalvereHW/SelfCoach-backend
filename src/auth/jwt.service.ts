@@ -36,7 +36,7 @@ export class JwtService {
   constructor(private configService: ConfigService) {
     this.jwtSecret = this.configService.get<string>('SUPABASE_JWT_SECRET');
     this.supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    
+
     if (!this.supabaseUrl) {
       throw new Error('SUPABASE_URL is required');
     }
@@ -45,18 +45,20 @@ export class JwtService {
   async validateSupabaseToken(token: string): Promise<SupabaseTokenPayload> {
     try {
       // Temporarily use simple token decoding without signature verification for testing
-      const payload = jwt.decode(token, { complete: false }) as SupabaseTokenPayload;
-      
+      const payload = jwt.decode(token, {
+        complete: false,
+      }) as SupabaseTokenPayload;
+
       if (!payload || !payload.sub) {
         throw new UnauthorizedException('Invalid token format');
       }
-      
+
       // Check if token is expired
       const now = Math.floor(Date.now() / 1000);
       if (payload.exp && payload.exp < now) {
         throw new UnauthorizedException('Token expired');
       }
-      
+
       return payload;
     } catch (error) {
       if (error?.name === 'TokenExpiredError') {
@@ -65,11 +67,15 @@ export class JwtService {
       if (error?.name === 'JsonWebTokenError') {
         throw new UnauthorizedException('Invalid token');
       }
-      throw new UnauthorizedException(`Token validation failed: ${error?.message || 'Unknown error'}`);
+      throw new UnauthorizedException(
+        `Token validation failed: ${error?.message || 'Unknown error'}`,
+      );
     }
   }
 
-  private async validateUserToken(token: string): Promise<SupabaseTokenPayload> {
+  private async validateUserToken(
+    token: string,
+  ): Promise<SupabaseTokenPayload> {
     // Decode header to get kid (key ID)
     const decodedHeader = jwt.decode(token, { complete: true });
     if (!decodedHeader || !decodedHeader.header.kid) {
@@ -78,7 +84,7 @@ export class JwtService {
 
     // Get signing key from JWKS
     const key = await this.getSigningKey(decodedHeader.header.kid);
-    
+
     // Verify token with RS256
     const payload = jwt.verify(token, key, {
       algorithms: ['RS256'],
@@ -118,28 +124,30 @@ export class JwtService {
       // Fetch JWKS from Supabase
       const jwksUrl = `${this.supabaseUrl}/.well-known/jwks.json`;
       const response = await fetch(jwksUrl);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch JWKS: ${response.status}`);
       }
 
       const jwks: JWKSResponse = await response.json();
-      const key = jwks.keys.find(k => k.kid === kid);
-      
+      const key = jwks.keys.find((k) => k.kid === kid);
+
       if (!key) {
         throw new Error(`Unable to find a signing key that matches '${kid}'`);
       }
 
       // Convert JWK to PEM format
       const publicKey = this.jwkToPem(key);
-      
+
       // Cache the key for 1 hour
       this.jwksCache.set(kid, publicKey);
-      this.jwksCacheExpiry = now + (60 * 60 * 1000); // 1 hour
+      this.jwksCacheExpiry = now + 60 * 60 * 1000; // 1 hour
 
       return publicKey;
     } catch (error) {
-      throw new UnauthorizedException(`Unable to get signing key: ${error.message}`);
+      throw new UnauthorizedException(
+        `Unable to get signing key: ${error.message}`,
+      );
     }
   }
 
@@ -147,13 +155,16 @@ export class JwtService {
     try {
       // Create RSA key from JWK components
       const key = new NodeRSA();
-      
+
       // Import the JWK
-      key.importKey({
-        n: Buffer.from(jwk.n.replace(/-/g, '+').replace(/_/g, '/'), 'base64'),
-        e: Buffer.from(jwk.e.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
-      }, 'components-public');
-      
+      key.importKey(
+        {
+          n: Buffer.from(jwk.n.replace(/-/g, '+').replace(/_/g, '/'), 'base64'),
+          e: Buffer.from(jwk.e.replace(/-/g, '+').replace(/_/g, '/'), 'base64'),
+        },
+        'components-public',
+      );
+
       // Export as PEM
       return key.exportKey('public');
     } catch (error) {

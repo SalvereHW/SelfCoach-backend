@@ -13,6 +13,6 @@ import { AuthModule } from '../auth/auth.module.js';
   ],
   controllers: [UserController],
   providers: [UserService, ConfigService],
-  exports: [UserService] // Export UserService so it can be used by AuthService
+  exports: [UserService], // Export UserService so it can be used by AuthService
 })
 export class UserModule {}

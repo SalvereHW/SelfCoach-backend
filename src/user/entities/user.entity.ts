@@ -3,7 +3,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   BaseEntity,
-  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -46,7 +45,7 @@ export class User extends BaseEntity {
     type: 'enum',
     enum: HealthCondition,
     array: true,
-    default: [HealthCondition.NONE]
+    default: [HealthCondition.NONE],
   })
   healthConditions: HealthCondition[];
 
@@ -54,14 +53,14 @@ export class User extends BaseEntity {
     type: 'enum',
     enum: CulturalDiet,
     array: true,
-    default: [CulturalDiet.NO_PREFERENCE]
+    default: [CulturalDiet.NO_PREFERENCE],
   })
   culturalDietPreferences: CulturalDiet[];
 
   @Column({
     type: 'enum',
     enum: ActivityLevel,
-    default: ActivityLevel.MODERATELY_ACTIVE
+    default: ActivityLevel.MODERATELY_ACTIVE,
   })
   activityLevel: ActivityLevel;
 
@@ -103,11 +102,14 @@ export class User extends BaseEntity {
     const birthDate = new Date(this.dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
-    
+
     return age;
   }
 }

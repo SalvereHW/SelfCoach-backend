@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThan } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Reminder, ReminderStatus, ReminderFrequency } from './entities/reminder.entity.js';
-import { ReminderAction, ReminderActionType } from './entities/reminder-action.entity.js';
+import {
+  Reminder,
+  ReminderStatus,
+  ReminderFrequency,
+} from './entities/reminder.entity.js';
+import {
+  ReminderAction,
+  ReminderActionType,
+} from './entities/reminder-action.entity.js';
 import { CreateReminderDto } from './dto/create-reminder.dto.js';
 import { UpdateReminderDto } from './dto/update-reminder.dto.js';
 import { CreateReminderActionDto } from './dto/reminder-action.dto.js';
@@ -34,12 +41,17 @@ export class RemindersService {
     private readonly loggerService: LoggerService,
   ) {}
 
-  async create(userId: number, createReminderDto: CreateReminderDto): Promise<Reminder> {
+  async create(
+    userId: number,
+    createReminderDto: CreateReminderDto,
+  ): Promise<Reminder> {
     try {
       const reminder = this.reminderRepository.create({
         ...createReminderDto,
         scheduledTime: new Date(createReminderDto.scheduledTime),
-        endDate: createReminderDto.endDate ? new Date(createReminderDto.endDate) : null,
+        endDate: createReminderDto.endDate
+          ? new Date(createReminderDto.endDate)
+          : null,
         userId,
       });
 
@@ -53,7 +65,7 @@ export class RemindersService {
     userId: number,
     isEnabled?: boolean,
     status?: ReminderStatus,
-    limit?: number
+    limit?: number,
   ): Promise<Reminder[]> {
     try {
       const queryBuilder = this.reminderRepository
@@ -90,9 +102,9 @@ export class RemindersService {
           userId,
           isEnabled: true,
           status: ReminderStatus.ACTIVE,
-          scheduledTime: Between(now, future)
+          scheduledTime: Between(now, future),
         },
-        order: { scheduledTime: 'ASC' }
+        order: { scheduledTime: 'ASC' },
       });
     } catch (error) {
       throw new Error(`Failed to fetch upcoming reminders: ${error.message}`);
@@ -102,7 +114,7 @@ export class RemindersService {
   async findOne(id: number, userId: number): Promise<Reminder> {
     try {
       const reminder = await this.reminderRepository.findOne({
-        where: { id, userId }
+        where: { id, userId },
       });
 
       if (!reminder) {
@@ -118,14 +130,22 @@ export class RemindersService {
     }
   }
 
-  async update(id: number, userId: number, updateReminderDto: UpdateReminderDto): Promise<Reminder> {
+  async update(
+    id: number,
+    userId: number,
+    updateReminderDto: UpdateReminderDto,
+  ): Promise<Reminder> {
     try {
       const reminder = await this.findOne(id, userId);
 
       const updateData = {
         ...updateReminderDto,
-        scheduledTime: updateReminderDto.scheduledTime ? new Date(updateReminderDto.scheduledTime) : reminder.scheduledTime,
-        endDate: updateReminderDto.endDate ? new Date(updateReminderDto.endDate) : reminder.endDate,
+        scheduledTime: updateReminderDto.scheduledTime
+          ? new Date(updateReminderDto.scheduledTime)
+          : reminder.scheduledTime,
+        endDate: updateReminderDto.endDate
+          ? new Date(updateReminderDto.endDate)
+          : reminder.endDate,
       };
 
       await this.reminderRepository.update(id, updateData);
@@ -140,7 +160,7 @@ export class RemindersService {
 
   async remove(id: number, userId: number): Promise<void> {
     try {
-      const reminder = await this.findOne(id, userId);
+      await this.findOne(id, userId);
       await this.reminderRepository.delete(id);
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -150,7 +170,11 @@ export class RemindersService {
     }
   }
 
-  async completeReminder(id: number, userId: number, actionDto?: CreateReminderActionDto): Promise<ReminderAction> {
+  async completeReminder(
+    id: number,
+    userId: number,
+    actionDto?: CreateReminderActionDto,
+  ): Promise<ReminderAction> {
     try {
       const reminder = await this.findOne(id, userId);
 
@@ -158,13 +182,13 @@ export class RemindersService {
       const action = await this.createAction(id, userId, {
         actionType: ReminderActionType.COMPLETED,
         note: actionDto?.note,
-        metadata: actionDto?.metadata
+        metadata: actionDto?.metadata,
       });
 
       // Update reminder status if it's a one-time reminder
       if (reminder.frequency === ReminderFrequency.ONCE) {
-        await this.reminderRepository.update(id, { 
-          status: ReminderStatus.COMPLETED 
+        await this.reminderRepository.update(id, {
+          status: ReminderStatus.COMPLETED,
         });
       }
 
@@ -177,14 +201,18 @@ export class RemindersService {
     }
   }
 
-  async dismissReminder(id: number, userId: number, actionDto?: CreateReminderActionDto): Promise<ReminderAction> {
+  async dismissReminder(
+    id: number,
+    userId: number,
+    actionDto?: CreateReminderActionDto,
+  ): Promise<ReminderAction> {
     try {
       await this.findOne(id, userId);
 
       return await this.createAction(id, userId, {
         actionType: ReminderActionType.DISMISSED,
         note: actionDto?.note,
-        metadata: actionDto?.metadata
+        metadata: actionDto?.metadata,
       });
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -194,22 +222,27 @@ export class RemindersService {
     }
   }
 
-  async snoozeReminder(id: number, userId: number, minutes: number, actionDto?: CreateReminderActionDto): Promise<ReminderAction> {
+  async snoozeReminder(
+    id: number,
+    userId: number,
+    minutes: number,
+    actionDto?: CreateReminderActionDto,
+  ): Promise<ReminderAction> {
     try {
-      const reminder = await this.findOne(id, userId);
+      await this.findOne(id, userId);
 
       const snoozeUntil = new Date();
       snoozeUntil.setMinutes(snoozeUntil.getMinutes() + minutes);
 
-      await this.reminderRepository.update(id, { 
+      await this.reminderRepository.update(id, {
         snoozeUntil,
-        status: ReminderStatus.SNOOZED 
+        status: ReminderStatus.SNOOZED,
       });
 
       return await this.createAction(id, userId, {
         actionType: ReminderActionType.SNOOZED,
         note: actionDto?.note,
-        metadata: { ...actionDto?.metadata, snoozeMinutes: minutes }
+        metadata: { ...actionDto?.metadata, snoozeMinutes: minutes },
       });
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -231,44 +264,59 @@ export class RemindersService {
 
       // Get all reminders for user
       const allReminders = await this.reminderRepository.find({
-        where: { userId }
+        where: { userId },
       });
 
-      const activeReminders = allReminders.filter(r => r.isEnabled && r.status === ReminderStatus.ACTIVE);
+      const activeReminders = allReminders.filter(
+        (r) => r.isEnabled && r.status === ReminderStatus.ACTIVE,
+      );
 
       // Get today's actions
       const todayActions = await this.reminderActionRepository.find({
         where: {
           userId,
-          actionTime: Between(today, tomorrow)
-        }
+          actionTime: Between(today, tomorrow),
+        },
       });
 
-      const completedToday = todayActions.filter(a => a.actionType === ReminderActionType.COMPLETED).length;
-      const missedToday = todayActions.filter(a => a.actionType === ReminderActionType.DISMISSED).length;
+      const completedToday = todayActions.filter(
+        (a) => a.actionType === ReminderActionType.COMPLETED,
+      ).length;
+      const missedToday = todayActions.filter(
+        (a) => a.actionType === ReminderActionType.DISMISSED,
+      ).length;
 
       // Get completion rate for last 7 days
       const weekActions = await this.reminderActionRepository.find({
         where: {
           userId,
-          actionTime: MoreThan(sevenDaysAgo)
-        }
+          actionTime: MoreThan(sevenDaysAgo),
+        },
       });
 
-      const weekCompleted = weekActions.filter(a => a.actionType === ReminderActionType.COMPLETED).length;
+      const weekCompleted = weekActions.filter(
+        (a) => a.actionType === ReminderActionType.COMPLETED,
+      ).length;
       const weekTotal = weekActions.length;
-      const completionRate = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+      const completionRate =
+        weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
 
       // Type and frequency breakdowns
-      const typeBreakdown = allReminders.reduce((acc, reminder) => {
-        acc[reminder.type] = (acc[reminder.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const typeBreakdown = allReminders.reduce(
+        (acc, reminder) => {
+          acc[reminder.type] = (acc[reminder.type] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
-      const frequencyBreakdown = allReminders.reduce((acc, reminder) => {
-        acc[reminder.frequency] = (acc[reminder.frequency] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const frequencyBreakdown = allReminders.reduce(
+        (acc, reminder) => {
+          acc[reminder.frequency] = (acc[reminder.frequency] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
       return {
         totalReminders: allReminders.length,
@@ -278,18 +326,22 @@ export class RemindersService {
         upcomingReminders: (await this.findUpcoming(userId)).length,
         completionRate,
         typeBreakdown,
-        frequencyBreakdown
+        frequencyBreakdown,
       };
     } catch (error) {
       throw new Error(`Failed to get reminder stats: ${error.message}`);
     }
   }
 
-  private async createAction(reminderId: number, userId: number, actionDto: CreateReminderActionDto): Promise<ReminderAction> {
+  private async createAction(
+    reminderId: number,
+    userId: number,
+    actionDto: CreateReminderActionDto,
+  ): Promise<ReminderAction> {
     const action = this.reminderActionRepository.create({
       reminderId,
       userId,
-      ...actionDto
+      ...actionDto,
     });
 
     return await this.reminderActionRepository.save(action);
@@ -302,8 +354,8 @@ export class RemindersService {
       const activeReminders = await this.reminderRepository.find({
         where: {
           isEnabled: true,
-          status: ReminderStatus.ACTIVE
-        }
+          status: ReminderStatus.ACTIVE,
+        },
       });
 
       for (const reminder of activeReminders) {
@@ -312,19 +364,21 @@ export class RemindersService {
         }
 
         // Check if snoozed reminders should be reactivated
-        if (reminder.status === ReminderStatus.SNOOZED && 
-            reminder.snoozeUntil && 
-            new Date() >= reminder.snoozeUntil) {
+        if (
+          reminder.status === ReminderStatus.SNOOZED &&
+          reminder.snoozeUntil &&
+          new Date() >= reminder.snoozeUntil
+        ) {
           await this.reminderRepository.update(reminder.id, {
             status: ReminderStatus.ACTIVE,
-            snoozeUntil: null
+            snoozeUntil: null,
           });
         }
       }
     } catch (error) {
       this.loggerService.error('Error processing reminders', error, {
         endpoint: 'reminders/process',
-        action: 'process_reminders'
+        action: 'process_reminders',
       });
     }
   }
@@ -333,31 +387,35 @@ export class RemindersService {
     try {
       // Create trigger action
       await this.createAction(reminder.id, reminder.userId, {
-        actionType: ReminderActionType.TRIGGERED
+        actionType: ReminderActionType.TRIGGERED,
       });
 
       // Here you would integrate with push notification service
       this.loggerService.info('Reminder triggered', {
         endpoint: 'reminders/trigger',
         action: 'trigger_reminder',
-        userId: reminder.userId
+        userId: reminder.userId,
       });
-      
+
       // For recurring reminders, update the scheduled time
       if (reminder.frequency !== ReminderFrequency.ONCE) {
         const nextTime = reminder.nextScheduledTime;
         if (nextTime) {
           await this.reminderRepository.update(reminder.id, {
-            scheduledTime: nextTime
+            scheduledTime: nextTime,
           });
         }
       }
     } catch (error) {
-      this.loggerService.error(`Error triggering reminder ${reminder.id}`, error, {
-        endpoint: 'reminders/trigger',
-        action: 'trigger_reminder',
-        userId: reminder.userId
-      });
+      this.loggerService.error(
+        `Error triggering reminder ${reminder.id}`,
+        error,
+        {
+          endpoint: 'reminders/trigger',
+          action: 'trigger_reminder',
+          userId: reminder.userId,
+        },
+      );
     }
   }
 }

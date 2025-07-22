@@ -1,4 +1,13 @@
-import { IsDateString, IsOptional, IsString, IsNumber, IsEnum, Min, Max, Matches } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsEnum,
+  Min,
+  Max,
+  Matches,
+} from 'class-validator';
 import { SleepQuality } from '../sleep-metric.entity.js';
 
 export class CreateSleepMetricDto {
@@ -8,14 +17,14 @@ export class CreateSleepMetricDto {
   @IsOptional()
   @IsString()
   @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-    message: 'bedTime must be in HH:MM format'
+    message: 'bedTime must be in HH:MM format',
   })
   bedTime?: string;
 
   @IsOptional()
   @IsString()
   @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-    message: 'wakeTime must be in HH:MM format'
+    message: 'wakeTime must be in HH:MM format',
   })
   wakeTime?: string;
 

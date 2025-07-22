@@ -17,7 +17,7 @@ export enum SessionStatus {
   IN_PROGRESS = 'in_progress',
   PAUSED = 'paused',
   COMPLETED = 'completed',
-  ABANDONED = 'abandoned'
+  ABANDONED = 'abandoned',
 }
 
 @Entity('session_progress')
@@ -36,7 +36,7 @@ export class SessionProgress extends BaseEntity {
   @Column({
     type: 'enum',
     enum: SessionStatus,
-    default: SessionStatus.NOT_STARTED
+    default: SessionStatus.NOT_STARTED,
   })
   status: SessionStatus;
 
@@ -61,7 +61,9 @@ export class SessionProgress extends BaseEntity {
   @Column({ type: 'json', nullable: true })
   sessionData: Record<string, any>; // For storing session-specific progress data
 
-  @ManyToOne(() => WellnessSession, (session) => session.sessionProgress, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WellnessSession, (session) => session.sessionProgress, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'sessionId' })
   wellnessSession: Promise<WellnessSession>;
 
@@ -78,11 +80,14 @@ export class SessionProgress extends BaseEntity {
   // Virtual properties
   get progressPercentage(): number {
     if (!this.progressTime) return 0;
-    
+
     // This would ideally use the session duration from the related WellnessSession
     // For now, we'll assume a default duration that can be overridden
     const sessionDuration = this.sessionData?.duration || 600; // 10 minutes default in seconds
-    return Math.min(Math.round((this.progressTime / sessionDuration) * 100), 100);
+    return Math.min(
+      Math.round((this.progressTime / sessionDuration) * 100),
+      100,
+    );
   }
 
   get isCompleted(): boolean {
@@ -91,7 +96,7 @@ export class SessionProgress extends BaseEntity {
 
   get duration(): number {
     if (!this.startedAt) return 0;
-    
+
     const endTime = this.completedAt || new Date();
     return Math.floor((endTime.getTime() - this.startedAt.getTime()) / 1000);
   }

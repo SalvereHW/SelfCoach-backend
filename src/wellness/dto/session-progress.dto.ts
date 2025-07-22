@@ -1,4 +1,12 @@
-import { IsEnum, IsOptional, IsNumber, IsString, IsObject, Min, Max } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsObject,
+  Min,
+  Max,
+} from 'class-validator';
 import { SessionStatus } from '../entities/session-progress.entity.js';
 
 export class StartSessionDto {

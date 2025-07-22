@@ -1,9 +1,18 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThan } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { AiInsight, InsightType, InsightPriority } from './entities/ai-insight.entity.js';
+import {
+  AiInsight,
+  InsightType,
+  InsightPriority,
+} from './entities/ai-insight.entity.js';
 import { CreateAiInsightDto } from './dto/create-ai-insight.dto.js';
 import { UpdateAiInsightDto } from './dto/update-ai-insight.dto.js';
 import { GenerateInsightDto } from './dto/generate-insight.dto.js';
@@ -34,7 +43,9 @@ export class AiInsightsService {
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     if (!apiKey) {
-      this.logger.warn('OpenAI API key not found. AI insights will be disabled.');
+      this.logger.warn(
+        'OpenAI API key not found. AI insights will be disabled.',
+      );
     } else {
       this.openai = new OpenAI({
         apiKey: apiKey,
@@ -42,7 +53,10 @@ export class AiInsightsService {
     }
   }
 
-  async create(userId: number, createAiInsightDto: CreateAiInsightDto): Promise<AiInsight> {
+  async create(
+    userId: number,
+    createAiInsightDto: CreateAiInsightDto,
+  ): Promise<AiInsight> {
     const insight = this.aiInsightRepository.create({
       ...createAiInsightDto,
       userId,
@@ -72,11 +86,15 @@ export class AiInsightsService {
     return insight;
   }
 
-  async update(userId: number, id: number, updateAiInsightDto: UpdateAiInsightDto): Promise<AiInsight> {
+  async update(
+    userId: number,
+    id: number,
+    updateAiInsightDto: UpdateAiInsightDto,
+  ): Promise<AiInsight> {
     const insight = await this.findOne(userId, id);
-    
+
     Object.assign(insight, updateAiInsightDto);
-    
+
     if (updateAiInsightDto.insightDate) {
       insight.insightDate = new Date(updateAiInsightDto.insightDate);
     }
@@ -112,7 +130,10 @@ export class AiInsightsService {
     });
 
     const maxGenerationsPerDay = 3;
-    const remainingGenerations = Math.max(0, maxGenerationsPerDay - recentGenerations);
+    const remainingGenerations = Math.max(
+      0,
+      maxGenerationsPerDay - recentGenerations,
+    );
 
     if (recentGenerations >= maxGenerationsPerDay) {
       // Find the oldest generation in the last 24 hours to calculate when next generation is available
@@ -125,7 +146,7 @@ export class AiInsightsService {
         order: { createdAt: 'ASC' },
       });
 
-      const nextAvailableTime = oldestGeneration 
+      const nextAvailableTime = oldestGeneration
         ? new Date(oldestGeneration.createdAt.getTime() + 24 * 60 * 60 * 1000)
         : new Date(now.getTime() + 6 * 60 * 60 * 1000); // 6 hours default
 
@@ -173,12 +194,38 @@ export class AiInsightsService {
     };
   }
 
-  async generateInsight(userId: number, generateDto: GenerateInsightDto): Promise<AiInsight> {
-    // Check rate limits
+  async generateInsight(
+    userId: number,
+    generateDto: GenerateInsightDto,
+  ): Promise<AiInsight> {
+    const targetDate = generateDto.date
+      ? new Date(generateDto.date)
+      : new Date();
+    const insightType = generateDto.type || InsightType.DAILY_SUMMARY;
+    
+    // Check if there's a recent insight (within 6 hours) that we can return
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    const recentInsight = await this.aiInsightRepository.findOne({
+      where: {
+        userId,
+        type: insightType,
+        createdAt: MoreThan(sixHoursAgo),
+      },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (recentInsight) {
+      this.logger.log(`Returning recent insight (ID: ${recentInsight.id}) for user ${userId}`);
+      return recentInsight;
+    }
+
+    // Check rate limits only if we need to generate a new insight
     const limitCheck = await this.checkGenerationLimit(userId);
     if (!limitCheck.canGenerate) {
       throw new BadRequestException(
-        `Generation limit reached. Next available generation: ${limitCheck.nextAvailableTime?.toISOString()}. Remaining generations today: ${limitCheck.remainingGenerations}`
+        `Generation limit reached. Next available generation: ${limitCheck.nextAvailableTime?.toISOString()}. Remaining generations today: ${
+          limitCheck.remainingGenerations
+        }`,
       );
     }
 
@@ -186,19 +233,23 @@ export class AiInsightsService {
       throw new BadRequestException('AI insights are currently unavailable');
     }
 
-    const targetDate = generateDto.date ? new Date(generateDto.date) : new Date();
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
+    this.logger.log(`Generating new insight for user ${userId}`);
+
     // Gather health data for the target date and surrounding context
     const healthData = await this.gatherHealthData(userId, targetDate);
-    
+
     // Generate insight using OpenAI
-    const insightType = generateDto.type || InsightType.DAILY_SUMMARY;
-    const aiResponse = await this.generateAIInsight(healthData, insightType, user);
+    const aiResponse = await this.generateAIInsight(
+      healthData,
+      insightType,
+      user,
+    );
 
     // Save the generated insight
     const createDto: CreateAiInsightDto = {
@@ -212,7 +263,7 @@ export class AiInsightsService {
       metadata: {
         generatedAt: new Date().toISOString(),
         dataPoints: healthData.dataPointsCount,
-        aiModel: 'gpt-4',
+        aiModel: 'gpt-4o-mini',
       },
     };
 
@@ -222,7 +273,7 @@ export class AiInsightsService {
   private async gatherHealthData(userId: number, targetDate: Date) {
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -244,7 +295,7 @@ export class AiInsightsService {
 
     // Get historical data for context (last 7 days)
     const weekAgo = new Date(targetDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-    
+
     const [weekActivity, weekSleep, weekNutrition] = await Promise.all([
       this.activityRepository.find({
         where: { userId, date: Between(weekAgo, endOfDay) },
@@ -272,20 +323,26 @@ export class AiInsightsService {
         sleep: weekSleep,
         nutrition: weekNutrition,
       },
-      dataPointsCount: dayActivity.length + daySleep.length + dayNutrition.length,
+      dataPointsCount:
+        dayActivity.length + daySleep.length + dayNutrition.length,
     };
   }
 
-  private async generateAIInsight(healthData: any, type: InsightType, user: User) {
+  private async generateAIInsight(
+    healthData: any,
+    type: InsightType,
+    user: User,
+  ) {
     const prompt = this.buildPrompt(healthData, type, user);
-    
+
     try {
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini', // More cost-effective model
         messages: [
           {
             role: 'system',
-            content: 'You are a health and wellness AI assistant that provides personalized insights based on user health data. Always provide actionable, encouraging, and evidence-based recommendations.',
+            content:
+              'You are a health and wellness AI assistant that provides personalized insights based on user health data. Always provide actionable, encouraging, and evidence-based recommendations.',
           },
           {
             role: 'user',
@@ -310,29 +367,74 @@ export class AiInsightsService {
 
   private buildPrompt(healthData: any, type: InsightType, user: User): string {
     const { day, week, targetDate } = healthData;
-    
-    let prompt = `Analyze the following health data for ${user.email} on ${targetDate.toDateString()}:\n\n`;
-    
+
+    let prompt = `Analyze the following health data for ${
+      user.email
+    } on ${targetDate.toDateString()}:\n\n`;
+
     // Add daily data
     prompt += `TODAY'S DATA:\n`;
-    prompt += `Activities: ${day.activity.length > 0 ? day.activity.map(a => `${a.activityType} for ${a.duration} minutes (Heart Rate: ${a.averageHeartRate || 'N/A'} bpm)`).join(', ') : 'No activities logged'}\n`;
-    prompt += `Sleep: ${day.sleep.length > 0 ? day.sleep.map(s => `${s.duration ? Math.round(s.duration / 60) : 'N/A'} hours, quality: ${s.quality}`).join(', ') : 'No sleep data'}\n`;
-    prompt += `Nutrition: ${day.nutrition.length > 0 ? day.nutrition.map(n => `${n.foodName} (${n.calories || 'N/A'} cal)`).join(', ') : 'No nutrition logged'}\n\n`;
-    
+    prompt += `Activities: ${
+      day.activity.length > 0
+        ? day.activity
+            .map(
+              (a) =>
+                `${a.activityType} for ${a.duration} minutes (Heart Rate: ${
+                  a.averageHeartRate || 'N/A'
+                } bpm)`,
+            )
+            .join(', ')
+        : 'No activities logged'
+    }\n`;
+    prompt += `Sleep: ${
+      day.sleep.length > 0
+        ? day.sleep
+            .map(
+              (s) =>
+                `${
+                  s.duration ? Math.round(s.duration / 60) : 'N/A'
+                } hours, quality: ${s.quality}`,
+            )
+            .join(', ')
+        : 'No sleep data'
+    }\n`;
+    prompt += `Nutrition: ${
+      day.nutrition.length > 0
+        ? day.nutrition
+            .map((n) => `${n.foodName} (${n.calories || 'N/A'} cal)`)
+            .join(', ')
+        : 'No nutrition logged'
+    }\n\n`;
+
     // Add weekly context
-    if (week.activity.length > 0 || week.sleep.length > 0 || week.nutrition.length > 0) {
+    if (
+      week.activity.length > 0 ||
+      week.sleep.length > 0 ||
+      week.nutrition.length > 0
+    ) {
       prompt += `WEEKLY CONTEXT (last 7 days):\n`;
       if (week.activity.length > 0) {
-        const avgHeartRate = week.activity
-          .filter(a => a.averageHeartRate)
-          .reduce((sum, a) => sum + a.averageHeartRate, 0) / week.activity.filter(a => a.averageHeartRate).length;
-        prompt += `- ${week.activity.length} activities logged, average heart rate: ${avgHeartRate ? Math.round(avgHeartRate) : 'N/A'} bpm\n`;
+        const avgHeartRate =
+          week.activity
+            .filter((a) => a.averageHeartRate)
+            .reduce((sum, a) => sum + a.averageHeartRate, 0) /
+          week.activity.filter((a) => a.averageHeartRate).length;
+        prompt += `- ${
+          week.activity.length
+        } activities logged, average heart rate: ${
+          avgHeartRate ? Math.round(avgHeartRate) : 'N/A'
+        } bpm\n`;
       }
       if (week.sleep.length > 0) {
-        const avgSleep = week.sleep
-          .filter(s => s.duration)
-          .reduce((sum, s) => sum + s.duration, 0) / week.sleep.filter(s => s.duration).length / 60;
-        prompt += `- Average sleep: ${avgSleep ? avgSleep.toFixed(1) : 'N/A'} hours\n`;
+        const avgSleep =
+          week.sleep
+            .filter((s) => s.duration)
+            .reduce((sum, s) => sum + s.duration, 0) /
+          week.sleep.filter((s) => s.duration).length /
+          60;
+        prompt += `- Average sleep: ${
+          avgSleep ? avgSleep.toFixed(1) : 'N/A'
+        } hours\n`;
       }
       prompt += '\n';
     }
@@ -366,22 +468,28 @@ export class AiInsightsService {
       }
 
       const parsed = JSON.parse(jsonMatch[0]);
-      
+
       return {
         title: parsed.title || `${type.replace('_', ' ')} Insight`,
         content: parsed.content || response.substring(0, 300),
-        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
+        recommendations: Array.isArray(parsed.recommendations)
+          ? parsed.recommendations
+          : [],
         priority: parsed.priority || InsightPriority.MEDIUM,
         confidenceScore: parsed.confidenceScore || 75,
       };
     } catch (error) {
-      this.logger.warn('Failed to parse AI response as JSON, using fallback:', error);
-      
+      this.logger.warn(
+        'Failed to parse AI response as JSON, using fallback:',
+        error,
+      );
+
       // Fallback: extract basic information
-      const lines = response.split('\n').filter(line => line.trim());
-      const title = lines[0]?.substring(0, 100) || `${type.replace('_', ' ')} Insight`;
+      const lines = response.split('\n').filter((line) => line.trim());
+      const title =
+        lines[0]?.substring(0, 100) || `${type.replace('_', ' ')} Insight`;
       const content = response.substring(0, 300);
-      
+
       return {
         title,
         content,
@@ -392,7 +500,11 @@ export class AiInsightsService {
     }
   }
 
-  async getInsightsByType(userId: number, type: InsightType, limit: number = 20): Promise<AiInsight[]> {
+  async getInsightsByType(
+    userId: number,
+    type: InsightType,
+    limit: number = 20,
+  ): Promise<AiInsight[]> {
     return await this.aiInsightRepository.find({
       where: { userId, type },
       order: { createdAt: 'DESC' },
@@ -410,7 +522,7 @@ export class AiInsightsService {
   async generateDailyInsights(): Promise<void> {
     // This method can be called by a scheduler to generate daily insights for all users
     this.logger.log('Starting daily insights generation...');
-    
+
     try {
       const users = await this.userRepository.find({
         select: ['id', 'email'],
@@ -427,7 +539,10 @@ export class AiInsightsService {
             this.logger.log(`Generated daily insight for user ${user.id}`);
           }
         } catch (error) {
-          this.logger.error(`Failed to generate daily insight for user ${user.id}:`, error);
+          this.logger.error(
+            `Failed to generate daily insight for user ${user.id}:`,
+            error,
+          );
         }
       }
     } catch (error) {

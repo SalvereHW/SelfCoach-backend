@@ -16,7 +16,7 @@ export enum MealType {
   LUNCH = 'lunch',
   DINNER = 'dinner',
   SNACK = 'snack',
-  DRINK = 'drink'
+  DRINK = 'drink',
 }
 
 export enum ServingUnit {
@@ -29,7 +29,7 @@ export enum ServingUnit {
   SLICES = 'slices',
   MILLILITERS = 'milliliters',
   LITERS = 'liters',
-  FLUID_OUNCES = 'fluid_ounces'
+  FLUID_OUNCES = 'fluid_ounces',
 }
 
 @Entity('nutrition_metrics')
@@ -43,7 +43,7 @@ export class NutritionMetric extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: MealType
+    enum: MealType,
   })
   mealType: MealType;
 
@@ -55,7 +55,7 @@ export class NutritionMetric extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ServingUnit
+    enum: ServingUnit,
   })
   servingUnit: ServingUnit;
 
@@ -100,7 +100,11 @@ export class NutritionMetric extends BaseEntity {
   updatedAt: Date;
 
   // Virtual property for calorie breakdown
-  get macroBreakdown(): { protein: number; carbs: number; fats: number } | null {
+  get macroBreakdown(): {
+    protein: number;
+    carbs: number;
+    fats: number;
+  } | null {
     if (!this.protein || !this.carbs || !this.fats) return null;
 
     const proteinCalories = this.protein * 4;
@@ -113,7 +117,7 @@ export class NutritionMetric extends BaseEntity {
     return {
       protein: Math.round((proteinCalories / totalCalories) * 100),
       carbs: Math.round((carbCalories / totalCalories) * 100),
-      fats: Math.round((fatCalories / totalCalories) * 100)
+      fats: Math.round((fatCalories / totalCalories) * 100),
     };
   }
 }

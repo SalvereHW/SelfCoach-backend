@@ -5,17 +5,7 @@ import { ActivityModule } from './activity/activity.module.js';
 import { DailySummaryModule } from './daily-summary/daily-summary.module.js';
 
 @Module({
-  imports: [
-    SleepModule,
-    NutritionModule,
-    ActivityModule,
-    DailySummaryModule,
-  ],
-  exports: [
-    SleepModule,
-    NutritionModule,
-    ActivityModule,
-    DailySummaryModule,
-  ],
+  imports: [SleepModule, NutritionModule, ActivityModule, DailySummaryModule],
+  exports: [SleepModule, NutritionModule, ActivityModule, DailySummaryModule],
 })
 export class HealthModule {}

@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AdminModule } from '@adminjs/nestjs';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import * as AdminJSTypeorm from '@adminjs/typeorm'
-import AdminJS from 'adminjs'
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -29,26 +26,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js
 import { AuthModule } from './auth/auth.module.js';
 import { ConfigService } from '@nestjs/config';
 
-// AdminJS.registerAdapter({
-//   Resource: AdminJSTypeorm.Resource,
-//   Database: AdminJSTypeorm.Database,
-// })
-
-const DEFAULT_ADMIN = {
-  email: 'admin@example.com',
-  password: 'password',
-};
-
-const authenticate = async (email: string, password: string) => {
-  if (email === DEFAULT_ADMIN.email && password === DEFAULT_ADMIN.password) {
-    return Promise.resolve(DEFAULT_ADMIN);
-  }
-  // const user = await this.authService.validateUser(email, password);
-  //   if (user && await this.authService.verifyMFA(mfaToken, user.mfaSecret)) {
-  //     return user;
-  //   }
-  //   return null;
-};
+// AdminJS configuration commented out for now
 
 @Module({
   imports: [
@@ -66,7 +44,18 @@ const authenticate = async (email: string, password: string) => {
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [User, SleepMetric, NutritionMetric, ActivityMetric, DailySummary, Reminder, ReminderAction, WellnessSession, SessionProgress, AiInsight],
+        entities: [
+          User,
+          SleepMetric,
+          NutritionMetric,
+          ActivityMetric,
+          DailySummary,
+          Reminder,
+          ReminderAction,
+          WellnessSession,
+          SessionProgress,
+          AiInsight,
+        ],
         synchronize: true,
       }),
     }),

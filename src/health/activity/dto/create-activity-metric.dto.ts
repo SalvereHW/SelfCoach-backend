@@ -1,5 +1,17 @@
-import { IsDateString, IsString, IsNumber, IsEnum, IsOptional, Min, Max } from 'class-validator';
-import { ActivityType, ActivityIntensity, DistanceUnit } from '../activity-metric.entity.js';
+import {
+  IsDateString,
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  Min,
+  Max,
+} from 'class-validator';
+import {
+  ActivityType,
+  ActivityIntensity,
+  DistanceUnit,
+} from '../activity-metric.entity.js';
 
 export class CreateActivityMetricDto {
   @IsDateString()

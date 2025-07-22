@@ -1,4 +1,15 @@
-import { IsString, IsEmail, IsOptional, IsDateString, IsArray, IsEnum, IsNumber, Min, Max, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  IsEnum,
+  IsNumber,
+  Min,
+  Max,
+  IsObject,
+} from 'class-validator';
 import { HealthCondition } from '../enums/health-condition.enum.js';
 import { CulturalDiet } from '../enums/cultural-diet.enum.js';
 import { ActivityLevel } from '../enums/activity-level.enum.js';

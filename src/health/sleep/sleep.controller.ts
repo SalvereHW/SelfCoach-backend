@@ -26,7 +26,7 @@ export class SleepController {
   @Post()
   create(
     @Body() createSleepMetricDto: CreateSleepMetricDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.sleepService.create(req.user.id, createSleepMetricDto);
   }
@@ -36,23 +36,20 @@ export class SleepController {
     @Request() req: AuthenticatedRequest,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: number,
   ) {
     return this.sleepService.findAll(req.user.id, startDate, endDate, limit);
   }
 
   @Get('stats')
-  getStats(
-    @Request() req: AuthenticatedRequest,
-    @Query('days') days?: number
-  ) {
+  getStats(@Request() req: AuthenticatedRequest, @Query('days') days?: number) {
     return this.sleepService.getStats(req.user.id, days);
   }
 
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.sleepService.findOne(id, req.user.id);
   }
@@ -61,7 +58,7 @@ export class SleepController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateSleepMetricDto: UpdateSleepMetricDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.sleepService.update(id, req.user.id, updateSleepMetricDto);
   }
@@ -70,7 +67,7 @@ export class SleepController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.sleepService.remove(id, req.user.id);
   }

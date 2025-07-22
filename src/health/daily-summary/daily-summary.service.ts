@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { DailySummary, MoodLevel, StressLevel, EnergyLevel } from './daily-summary.entity.js';
+import { DailySummary } from './daily-summary.entity.js';
 import { CreateDailySummaryDto } from './dto/create-daily-summary.dto.js';
 import { UpdateDailySummaryDto } from './dto/update-daily-summary.dto.js';
 import { LoggerService } from '../../common/logging/logger.service.js';
@@ -34,11 +38,14 @@ export class DailySummaryService {
     private readonly loggerService: LoggerService,
   ) {}
 
-  async create(userId: number, createDailySummaryDto: CreateDailySummaryDto): Promise<DailySummary> {
+  async create(
+    userId: number,
+    createDailySummaryDto: CreateDailySummaryDto,
+  ): Promise<DailySummary> {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/create',
-      action: 'create_daily_summary'
+      action: 'create_daily_summary',
     };
 
     try {
@@ -46,13 +53,18 @@ export class DailySummaryService {
       const existingSummary = await this.dailySummaryRepository.findOne({
         where: {
           userId,
-          date: new Date(createDailySummaryDto.date)
-        }
+          date: new Date(createDailySummaryDto.date),
+        },
       });
 
       if (existingSummary) {
-        this.loggerService.warn('Attempted to create daily summary for existing date', logContext);
-        throw new BadRequestException('Daily summary already exists for this date');
+        this.loggerService.warn(
+          'Attempted to create daily summary for existing date',
+          logContext,
+        );
+        throw new BadRequestException(
+          'Daily summary already exists for this date',
+        );
       }
 
       const dailySummary = this.dailySummaryRepository.create({
@@ -61,16 +73,17 @@ export class DailySummaryService {
         userId,
       });
 
-      const savedDailySummary = await this.dailySummaryRepository.save(dailySummary);
-      
+      const savedDailySummary =
+        await this.dailySummaryRepository.save(dailySummary);
+
       this.loggerService.info('Daily summary created successfully', {
         ...logContext,
-        dailySummaryId: savedDailySummary.id
+        dailySummaryId: savedDailySummary.id,
       });
-      
+
       this.loggerService.logDataAccess('create', 'daily_summary', {
         ...logContext,
-        dailySummaryId: savedDailySummary.id
+        dailySummaryId: savedDailySummary.id,
       });
 
       return savedDailySummary;
@@ -78,7 +91,11 @@ export class DailySummaryService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.loggerService.error('Failed to create daily summary', error, logContext);
+      this.loggerService.error(
+        'Failed to create daily summary',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to create daily summary: ${error.message}`);
     }
   }
@@ -87,12 +104,12 @@ export class DailySummaryService {
     userId: number,
     startDate?: string,
     endDate?: string,
-    limit?: number
+    limit?: number,
   ): Promise<DailySummary[]> {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/find-all',
-      action: 'fetch_daily_summaries'
+      action: 'fetch_daily_summaries',
     };
 
     try {
@@ -104,7 +121,7 @@ export class DailySummaryService {
       if (startDate && endDate) {
         queryBuilder.andWhere('summary.date BETWEEN :startDate AND :endDate', {
           startDate: new Date(startDate),
-          endDate: new Date(endDate)
+          endDate: new Date(endDate),
         });
       }
 
@@ -113,17 +130,24 @@ export class DailySummaryService {
       }
 
       const results = await queryBuilder.getMany();
-      
-      this.loggerService.info(`Retrieved ${results.length} daily summaries`, logContext);
-      
+
+      this.loggerService.info(
+        `Retrieved ${results.length} daily summaries`,
+        logContext,
+      );
+
       this.loggerService.logDataAccess('read', 'daily_summary', {
         ...logContext,
-        recordCount: results.length
+        recordCount: results.length,
       });
 
       return results;
     } catch (error) {
-      this.loggerService.error('Failed to fetch daily summaries', error, logContext);
+      this.loggerService.error(
+        'Failed to fetch daily summaries',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to fetch daily summaries: ${error.message}`);
     }
   }
@@ -132,33 +156,37 @@ export class DailySummaryService {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/find-by-date',
-      action: 'fetch_daily_summary_by_date'
+      action: 'fetch_daily_summary_by_date',
     };
 
     try {
       const result = await this.dailySummaryRepository.findOne({
         where: {
           userId,
-          date: new Date(date)
-        }
+          date: new Date(date),
+        },
       });
-      
+
       this.loggerService.info('Daily summary by date lookup completed', {
         ...logContext,
         date: date,
-        found: !!result
+        found: !!result,
       });
-      
+
       if (result) {
         this.loggerService.logDataAccess('read', 'daily_summary', {
           ...logContext,
-          dailySummaryId: result.id
+          dailySummaryId: result.id,
         });
       }
 
       return result;
     } catch (error) {
-      this.loggerService.error('Failed to fetch daily summary by date', error, logContext);
+      this.loggerService.error(
+        'Failed to fetch daily summary by date',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to fetch daily summary: ${error.message}`);
     }
   }
@@ -167,30 +195,30 @@ export class DailySummaryService {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/find-one',
-      action: 'fetch_daily_summary'
+      action: 'fetch_daily_summary',
     };
 
     try {
       const dailySummary = await this.dailySummaryRepository.findOne({
-        where: { id, userId }
+        where: { id, userId },
       });
 
       if (!dailySummary) {
         this.loggerService.warn('Daily summary not found', {
           ...logContext,
-          dailySummaryId: id
+          dailySummaryId: id,
         });
         throw new NotFoundException('Daily summary not found');
       }
 
       this.loggerService.info('Daily summary retrieved successfully', {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
-      
+
       this.loggerService.logDataAccess('read', 'daily_summary', {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
 
       return dailySummary;
@@ -200,17 +228,21 @@ export class DailySummaryService {
       }
       this.loggerService.error('Failed to fetch daily summary', error, {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
       throw new Error(`Failed to fetch daily summary: ${error.message}`);
     }
   }
 
-  async update(id: number, userId: number, updateDailySummaryDto: UpdateDailySummaryDto): Promise<DailySummary> {
+  async update(
+    id: number,
+    userId: number,
+    updateDailySummaryDto: UpdateDailySummaryDto,
+  ): Promise<DailySummary> {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/update',
-      action: 'update_daily_summary'
+      action: 'update_daily_summary',
     };
 
     try {
@@ -218,20 +250,22 @@ export class DailySummaryService {
 
       const updateData = {
         ...updateDailySummaryDto,
-        date: updateDailySummaryDto.date ? new Date(updateDailySummaryDto.date) : dailySummary.date,
+        date: updateDailySummaryDto.date
+          ? new Date(updateDailySummaryDto.date)
+          : dailySummary.date,
       };
 
       await this.dailySummaryRepository.update(id, updateData);
       const updatedDailySummary = await this.findOne(id, userId);
-      
+
       this.loggerService.info('Daily summary updated successfully', {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
-      
+
       this.loggerService.logDataAccess('update', 'daily_summary', {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
 
       return updatedDailySummary;
@@ -241,34 +275,47 @@ export class DailySummaryService {
       }
       this.loggerService.error('Failed to update daily summary', error, {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
       throw new Error(`Failed to update daily summary: ${error.message}`);
     }
   }
 
-  async upsert(userId: number, createOrUpdateDto: CreateDailySummaryDto): Promise<DailySummary> {
+  async upsert(
+    userId: number,
+    createOrUpdateDto: CreateDailySummaryDto,
+  ): Promise<DailySummary> {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/upsert',
-      action: 'upsert_daily_summary'
+      action: 'upsert_daily_summary',
     };
 
     try {
-      const existingSummary = await this.findByDate(userId, createOrUpdateDto.date);
+      const existingSummary = await this.findByDate(
+        userId,
+        createOrUpdateDto.date,
+      );
 
       if (existingSummary) {
         this.loggerService.info('Existing daily summary found, updating', {
           ...logContext,
-          dailySummaryId: existingSummary.id
+          dailySummaryId: existingSummary.id,
         });
         return await this.update(existingSummary.id, userId, createOrUpdateDto);
       } else {
-        this.loggerService.info('No existing daily summary found, creating new', logContext);
+        this.loggerService.info(
+          'No existing daily summary found, creating new',
+          logContext,
+        );
         return await this.create(userId, createOrUpdateDto);
       }
     } catch (error) {
-      this.loggerService.error('Failed to upsert daily summary', error, logContext);
+      this.loggerService.error(
+        'Failed to upsert daily summary',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to upsert daily summary: ${error.message}`);
     }
   }
@@ -277,21 +324,21 @@ export class DailySummaryService {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/remove',
-      action: 'delete_daily_summary'
+      action: 'delete_daily_summary',
     };
 
     try {
-      const dailySummary = await this.findOne(id, userId);
+      await this.findOne(id, userId);
       await this.dailySummaryRepository.delete(id);
-      
+
       this.loggerService.info('Daily summary deleted successfully', {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
-      
+
       this.loggerService.logDataAccess('delete', 'daily_summary', {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -299,17 +346,20 @@ export class DailySummaryService {
       }
       this.loggerService.error('Failed to delete daily summary', error, {
         ...logContext,
-        dailySummaryId: id
+        dailySummaryId: id,
       });
       throw new Error(`Failed to delete daily summary: ${error.message}`);
     }
   }
 
-  async getStats(userId: number, days: number = 30): Promise<WellnessStatsResponse> {
+  async getStats(
+    userId: number,
+    days: number = 30,
+  ): Promise<WellnessStatsResponse> {
     const logContext = {
       userId,
       endpoint: 'health/daily-summary/stats',
-      action: 'calculate_wellness_stats'
+      action: 'calculate_wellness_stats',
     };
 
     try {
@@ -320,52 +370,78 @@ export class DailySummaryService {
       const summaries = await this.dailySummaryRepository.find({
         where: {
           userId,
-          date: Between(startDate, endDate)
+          date: Between(startDate, endDate),
         },
-        order: { date: 'ASC' }
+        order: { date: 'ASC' },
       });
 
       this.loggerService.info('Wellness stats calculation initiated', {
         ...logContext,
         daysRequested: days,
-        recordsFound: summaries.length
+        recordsFound: summaries.length,
       });
-      
+
       this.loggerService.logDataAccess('read', 'daily_summary_stats', {
         ...logContext,
-        recordCount: summaries.length
+        recordCount: summaries.length,
       });
 
       if (summaries.length === 0) {
-        this.loggerService.warn('No wellness data found for stats calculation', logContext);
+        this.loggerService.warn(
+          'No wellness data found for stats calculation',
+          logContext,
+        );
         return this.getEmptyStats();
       }
 
       // Calculate averages
-      const validMoods = summaries.filter(s => s.mood !== null && s.mood !== undefined).map(s => s.mood!);
-      const validStress = summaries.filter(s => s.stressLevel !== null && s.stressLevel !== undefined).map(s => s.stressLevel!);
-      const validEnergy = summaries.filter(s => s.energyLevel !== null && s.energyLevel !== undefined).map(s => s.energyLevel!);
-      const validWellnessScores = summaries.filter(s => s.wellnessScore !== null).map(s => s.wellnessScore!);
-      const validWeights = summaries.filter(s => s.weight !== null && s.weight !== undefined).map(s => s.weight!);
+      const validMoods = summaries
+        .filter((s) => s.mood !== null && s.mood !== undefined)
+        .map((s) => s.mood!);
+      const validStress = summaries
+        .filter((s) => s.stressLevel !== null && s.stressLevel !== undefined)
+        .map((s) => s.stressLevel!);
+      const validEnergy = summaries
+        .filter((s) => s.energyLevel !== null && s.energyLevel !== undefined)
+        .map((s) => s.energyLevel!);
+      const validWellnessScores = summaries
+        .filter((s) => s.wellnessScore !== null)
+        .map((s) => s.wellnessScore!);
+      const validWeights = summaries
+        .filter((s) => s.weight !== null && s.weight !== undefined)
+        .map((s) => s.weight!);
 
       // Blood pressure calculations
-      const validBP = summaries.filter(s => s.bloodPressureSystolic && s.bloodPressureDiastolic);
-      const avgSystolic = validBP.length > 0 
-        ? Math.round(validBP.reduce((sum, s) => sum + s.bloodPressureSystolic!, 0) / validBP.length)
-        : 0;
-      const avgDiastolic = validBP.length > 0
-        ? Math.round(validBP.reduce((sum, s) => sum + s.bloodPressureDiastolic!, 0) / validBP.length)
-        : 0;
+      const validBP = summaries.filter(
+        (s) => s.bloodPressureSystolic && s.bloodPressureDiastolic,
+      );
+      const avgSystolic =
+        validBP.length > 0
+          ? Math.round(
+              validBP.reduce((sum, s) => sum + s.bloodPressureSystolic!, 0) /
+                validBP.length,
+            )
+          : 0;
+      const avgDiastolic =
+        validBP.length > 0
+          ? Math.round(
+              validBP.reduce((sum, s) => sum + s.bloodPressureDiastolic!, 0) /
+                validBP.length,
+            )
+          : 0;
 
       // Symptom analysis
-      const allSymptoms = summaries.flatMap(s => s.symptoms || []);
-      const symptomCounts = allSymptoms.reduce((counts, symptom) => {
-        counts[symptom] = (counts[symptom] || 0) + 1;
-        return counts;
-      }, {} as Record<string, number>);
-      
+      const allSymptoms = summaries.flatMap((s) => s.symptoms || []);
+      const symptomCounts = allSymptoms.reduce(
+        (counts, symptom) => {
+          counts[symptom] = (counts[symptom] || 0) + 1;
+          return counts;
+        },
+        {} as Record<string, number>,
+      );
+
       const mostCommonSymptoms = Object.entries(symptomCounts)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
         .map(([symptom]) => symptom);
 
@@ -379,47 +455,80 @@ export class DailySummaryService {
       let bpCategory = 'Unknown';
       if (avgSystolic > 0 && avgDiastolic > 0) {
         if (avgSystolic < 120 && avgDiastolic < 80) bpCategory = 'Normal';
-        else if (avgSystolic < 130 && avgDiastolic < 80) bpCategory = 'Elevated';
-        else if ((avgSystolic >= 130 && avgSystolic < 140) || (avgDiastolic >= 80 && avgDiastolic < 90)) bpCategory = 'Stage 1 Hypertension';
-        else if (avgSystolic >= 140 || avgDiastolic >= 90) bpCategory = 'Stage 2 Hypertension';
-        else if (avgSystolic > 180 || avgDiastolic > 120) bpCategory = 'Hypertensive Crisis';
+        else if (avgSystolic < 130 && avgDiastolic < 80)
+          bpCategory = 'Elevated';
+        else if (
+          (avgSystolic >= 130 && avgSystolic < 140) ||
+          (avgDiastolic >= 80 && avgDiastolic < 90)
+        )
+          bpCategory = 'Stage 1 Hypertension';
+        else if (avgSystolic >= 140 || avgDiastolic >= 90)
+          bpCategory = 'Stage 2 Hypertension';
+        else if (avgSystolic > 180 || avgDiastolic > 120)
+          bpCategory = 'Hypertensive Crisis';
       }
 
       const stats = {
-        averageMood: validMoods.length > 0 
-          ? Math.round((validMoods.reduce((a, b) => a + b, 0) / validMoods.length) * 100) / 100
-          : 0,
-        averageStress: validStress.length > 0
-          ? Math.round((validStress.reduce((a, b) => a + b, 0) / validStress.length) * 100) / 100
-          : 0,
-        averageEnergy: validEnergy.length > 0
-          ? Math.round((validEnergy.reduce((a, b) => a + b, 0) / validEnergy.length) * 100) / 100
-          : 0,
-        averageWellnessScore: validWellnessScores.length > 0
-          ? Math.round((validWellnessScores.reduce((a, b) => a + b, 0) / validWellnessScores.length) * 100) / 100
-          : 0,
+        averageMood:
+          validMoods.length > 0
+            ? Math.round(
+                (validMoods.reduce((a, b) => a + b, 0) / validMoods.length) *
+                  100,
+              ) / 100
+            : 0,
+        averageStress:
+          validStress.length > 0
+            ? Math.round(
+                (validStress.reduce((a, b) => a + b, 0) / validStress.length) *
+                  100,
+              ) / 100
+            : 0,
+        averageEnergy:
+          validEnergy.length > 0
+            ? Math.round(
+                (validEnergy.reduce((a, b) => a + b, 0) / validEnergy.length) *
+                  100,
+              ) / 100
+            : 0,
+        averageWellnessScore:
+          validWellnessScores.length > 0
+            ? Math.round(
+                (validWellnessScores.reduce((a, b) => a + b, 0) /
+                  validWellnessScores.length) *
+                  100,
+              ) / 100
+            : 0,
         totalDays: summaries.length,
         mostCommonSymptoms,
-        averageWeight: validWeights.length > 0
-          ? Math.round((validWeights.reduce((a, b) => a + b, 0) / validWeights.length) * 100) / 100
-          : 0,
+        averageWeight:
+          validWeights.length > 0
+            ? Math.round(
+                (validWeights.reduce((a, b) => a + b, 0) /
+                  validWeights.length) *
+                  100,
+              ) / 100
+            : 0,
         weightTrend,
         bloodPressureTrend: {
           averageSystolic: avgSystolic,
           averageDiastolic: avgDiastolic,
-          category: bpCategory
+          category: bpCategory,
         },
-        moodTrend
+        moodTrend,
       };
 
       this.loggerService.info('Wellness stats calculated successfully', {
         ...logContext,
-        statsGenerated: true
+        statsGenerated: true,
       });
 
       return stats;
     } catch (error) {
-      this.loggerService.error('Failed to calculate wellness stats', error, logContext);
+      this.loggerService.error(
+        'Failed to calculate wellness stats',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to calculate wellness stats: ${error.message}`);
     }
   }
@@ -437,13 +546,15 @@ export class DailySummaryService {
       bloodPressureTrend: {
         averageSystolic: 0,
         averageDiastolic: 0,
-        category: 'Unknown'
+        category: 'Unknown',
       },
-      moodTrend: []
+      moodTrend: [],
     };
   }
 
-  private calculateWeightTrend(weights: number[]): 'increasing' | 'decreasing' | 'stable' | 'insufficient_data' {
+  private calculateWeightTrend(
+    weights: number[],
+  ): 'increasing' | 'decreasing' | 'stable' | 'insufficient_data' {
     if (weights.length < 3) return 'insufficient_data';
 
     const firstHalf = weights.slice(0, Math.floor(weights.length / 2));
@@ -462,7 +573,7 @@ export class DailySummaryService {
   private calculateMoodTrend(summaries: DailySummary[]) {
     const weeks = new Map<string, { moods: number[]; count: number }>();
 
-    summaries.forEach(summary => {
+    summaries.forEach((summary) => {
       if (summary.mood !== null && summary.mood !== undefined) {
         const weekStart = this.getWeekStart(summary.date);
         const weekKey = weekStart.toISOString().split('T')[0];
@@ -476,10 +587,15 @@ export class DailySummaryService {
       }
     });
 
-    return Array.from(weeks.entries()).map(([week, data]) => ({
-      week,
-      averageMood: Math.round((data.moods.reduce((a, b) => a + b, 0) / data.moods.length) * 100) / 100
-    })).sort((a, b) => a.week.localeCompare(b.week));
+    return Array.from(weeks.entries())
+      .map(([week, data]) => ({
+        week,
+        averageMood:
+          Math.round(
+            (data.moods.reduce((a, b) => a + b, 0) / data.moods.length) * 100,
+          ) / 100,
+      }))
+      .sort((a, b) => a.week.localeCompare(b.week));
   }
 
   private getWeekStart(date: Date): Date {

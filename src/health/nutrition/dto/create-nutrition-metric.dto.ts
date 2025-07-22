@@ -1,4 +1,12 @@
-import { IsDateString, IsString, IsNumber, IsEnum, IsOptional, Min, Max } from 'class-validator';
+import {
+  IsDateString,
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  Min,
+  Max,
+} from 'class-validator';
 import { MealType, ServingUnit } from '../nutrition-metric.entity.js';
 
 export class CreateNutritionMetricDto {

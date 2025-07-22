@@ -14,9 +14,16 @@ import {
 import { WellnessService } from './wellness.service.js';
 import { CreateWellnessSessionDto } from './dto/create-wellness-session.dto.js';
 import { UpdateWellnessSessionDto } from './dto/update-wellness-session.dto.js';
-import { StartSessionDto, UpdateSessionProgressDto, CompleteSessionDto } from './dto/session-progress.dto.js';
+import {
+  StartSessionDto,
+  UpdateSessionProgressDto,
+  CompleteSessionDto,
+} from './dto/session-progress.dto.js';
 import { AuthGuard, AuthenticatedRequest } from '../auth/auth.guard.js';
-import { SessionType, SessionDifficulty } from './entities/wellness-session.entity.js';
+import {
+  SessionType,
+  SessionDifficulty,
+} from './entities/wellness-session.entity.js';
 
 @Controller('api/wellness')
 export class WellnessController {
@@ -33,7 +40,7 @@ export class WellnessController {
   // @UseGuards(AdminGuard)
   updateSession(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateWellnessSessionDto: UpdateWellnessSessionDto
+    @Body() updateWellnessSessionDto: UpdateWellnessSessionDto,
   ) {
     return this.wellnessService.updateSession(id, updateWellnessSessionDto);
   }
@@ -51,10 +58,18 @@ export class WellnessController {
     @Query('difficulty') difficulty?: SessionDifficulty,
     @Query('isPremium') isPremium?: boolean,
     @Query('tags') tags?: string,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: number,
   ) {
-    const tagArray = tags ? tags.split(',').map(tag => tag.trim()) : undefined;
-    return this.wellnessService.findAllSessions(type, difficulty, isPremium, tagArray, limit);
+    const tagArray = tags
+      ? tags.split(',').map((tag) => tag.trim())
+      : undefined;
+    return this.wellnessService.findAllSessions(
+      type,
+      difficulty,
+      isPremium,
+      tagArray,
+      limit,
+    );
   }
 
   @Get('sessions/:id')
@@ -68,7 +83,7 @@ export class WellnessController {
   startSession(
     @Param('id', ParseIntPipe) id: number,
     @Body() startDto: StartSessionDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.wellnessService.startSession(id, req.user.id, startDto);
   }
@@ -78,9 +93,13 @@ export class WellnessController {
   updateProgress(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateSessionProgressDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.wellnessService.updateSessionProgress(id, req.user.id, updateDto);
+    return this.wellnessService.updateSessionProgress(
+      id,
+      req.user.id,
+      updateDto,
+    );
   }
 
   @Post('sessions/:id/complete')
@@ -88,7 +107,7 @@ export class WellnessController {
   completeSession(
     @Param('id', ParseIntPipe) id: number,
     @Body() completeDto: CompleteSessionDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.wellnessService.completeSession(id, req.user.id, completeDto);
   }
@@ -97,10 +116,13 @@ export class WellnessController {
   @UseGuards(AuthGuard)
   getUserProgress(
     @Request() req: AuthenticatedRequest,
-    @Query('sessionId') sessionId?: string
+    @Query('sessionId') sessionId?: string,
   ) {
     const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-    return this.wellnessService.getUserSessionProgress(req.user.id, parsedSessionId);
+    return this.wellnessService.getUserSessionProgress(
+      req.user.id,
+      parsedSessionId,
+    );
   }
 
   @Get('stats')

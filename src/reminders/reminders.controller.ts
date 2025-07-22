@@ -28,7 +28,7 @@ export class RemindersController {
   @Post()
   create(
     @Body() createReminderDto: CreateReminderDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.remindersService.create(req.user.id, createReminderDto);
   }
@@ -38,7 +38,7 @@ export class RemindersController {
     @Request() req: AuthenticatedRequest,
     @Query('isEnabled') isEnabled?: boolean,
     @Query('status') status?: ReminderStatus,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: number,
   ) {
     return this.remindersService.findAll(req.user.id, isEnabled, status, limit);
   }
@@ -46,7 +46,7 @@ export class RemindersController {
   @Get('upcoming')
   findUpcoming(
     @Request() req: AuthenticatedRequest,
-    @Query('hours') hours?: number
+    @Query('hours') hours?: number,
   ) {
     return this.remindersService.findUpcoming(req.user.id, hours);
   }
@@ -59,7 +59,7 @@ export class RemindersController {
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.remindersService.findOne(id, req.user.id);
   }
@@ -68,7 +68,7 @@ export class RemindersController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateReminderDto: UpdateReminderDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.remindersService.update(id, req.user.id, updateReminderDto);
   }
@@ -77,7 +77,7 @@ export class RemindersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.remindersService.remove(id, req.user.id);
   }
@@ -86,7 +86,7 @@ export class RemindersController {
   complete(
     @Param('id', ParseIntPipe) id: number,
     @Body() actionDto: CreateReminderActionDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.remindersService.completeReminder(id, req.user.id, actionDto);
   }
@@ -95,7 +95,7 @@ export class RemindersController {
   dismiss(
     @Param('id', ParseIntPipe) id: number,
     @Body() actionDto: CreateReminderActionDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.remindersService.dismissReminder(id, req.user.id, actionDto);
   }
@@ -104,8 +104,13 @@ export class RemindersController {
   snooze(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { minutes: number } & CreateReminderActionDto,
-    @Request() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.remindersService.snoozeReminder(id, req.user.id, body.minutes, body);
+    return this.remindersService.snoozeReminder(
+      id,
+      req.user.id,
+      body.minutes,
+      body,
+    );
   }
 }

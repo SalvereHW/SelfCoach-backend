@@ -51,13 +51,17 @@ export class LoggerService {
 
   error(message: string, error?: Error, context?: LogContext): void {
     const logData = this.sanitizeContext(context);
-    const errorData = error ? {
-      name: error.name,
-      message: error.message,
-      stack: this.isProduction ? undefined : error.stack
-    } : {};
-    
-    this.logger.error(`${message} ${JSON.stringify({ ...logData, error: errorData })}`);
+    const errorData = error
+      ? {
+          name: error.name,
+          message: error.message,
+          stack: this.isProduction ? undefined : error.stack,
+        }
+      : {};
+
+    this.logger.error(
+      `${message} ${JSON.stringify({ ...logData, error: errorData })}`,
+    );
   }
 
   warn(message: string, context?: LogContext): void {
@@ -91,24 +95,31 @@ export class LoggerService {
   }
 
   // Authentication events
-  logAuthEvent(action: string, success: boolean, context: LogContext, reason?: string): void {
+  logAuthEvent(
+    action: string,
+    success: boolean,
+    context: LogContext,
+    reason?: string,
+  ): void {
     this.logSecurityEvent({
       ...context,
       action,
       success,
-      reason
+      reason,
     });
   }
 
   // Data access logging (for audit purposes)
   logDataAccess(action: string, resource: string, context: LogContext): void {
     const sanitizedContext = this.sanitizeContext(context);
-    this.logger.log(`DATA_ACCESS: ${JSON.stringify({
-      ...sanitizedContext,
-      action,
-      resource,
-      timestamp: new Date().toISOString()
-    })}`);
+    this.logger.log(
+      `DATA_ACCESS: ${JSON.stringify({
+        ...sanitizedContext,
+        action,
+        resource,
+        timestamp: new Date().toISOString(),
+      })}`,
+    );
   }
 
   private sanitizeContext(context?: LogContext): any {
@@ -118,10 +129,16 @@ export class LoggerService {
     const sanitized = { ...context };
 
     // Never log passwords, tokens, or sensitive health data
-    const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
-    
-    Object.keys(sanitized).forEach(key => {
-      if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
+    const sensitiveFields = [
+      'password',
+      'token',
+      'secret',
+      'key',
+      'authorization',
+    ];
+
+    Object.keys(sanitized).forEach((key) => {
+      if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
         sanitized[key] = '[REDACTED]';
       }
     });

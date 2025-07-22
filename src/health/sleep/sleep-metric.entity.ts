@@ -15,7 +15,7 @@ export enum SleepQuality {
   POOR = 'poor',
   FAIR = 'fair',
   GOOD = 'good',
-  EXCELLENT = 'excellent'
+  EXCELLENT = 'excellent',
 }
 
 @Entity('sleep_metrics')
@@ -39,7 +39,7 @@ export class SleepMetric extends BaseEntity {
   @Column({
     type: 'enum',
     enum: SleepQuality,
-    nullable: true
+    nullable: true,
   })
   quality: SleepQuality;
 
@@ -71,27 +71,34 @@ export class SleepMetric extends BaseEntity {
   // Virtual properties for calculations
   get sleepEfficiency(): number | null {
     if (!this.duration || !this.bedTime || !this.wakeTime) return null;
-    
+
     // Calculate time in bed vs actual sleep time
     const bedTimeParts = this.bedTime.split(':');
     const wakeTimeParts = this.wakeTime.split(':');
-    
-    const bedTimeMinutes = parseInt(bedTimeParts[0]) * 60 + parseInt(bedTimeParts[1]);
-    const wakeTimeMinutes = parseInt(wakeTimeParts[0]) * 60 + parseInt(wakeTimeParts[1]);
-    
+
+    const bedTimeMinutes =
+      parseInt(bedTimeParts[0]) * 60 + parseInt(bedTimeParts[1]);
+    const wakeTimeMinutes =
+      parseInt(wakeTimeParts[0]) * 60 + parseInt(wakeTimeParts[1]);
+
     let timeInBed = wakeTimeMinutes - bedTimeMinutes;
     if (timeInBed < 0) timeInBed += 24 * 60; // Handle overnight sleep
-    
+
     return Math.round((this.duration / timeInBed) * 100);
   }
 
   get qualityScore(): number {
     switch (this.quality) {
-      case SleepQuality.POOR: return 1;
-      case SleepQuality.FAIR: return 2;
-      case SleepQuality.GOOD: return 3;
-      case SleepQuality.EXCELLENT: return 4;
-      default: return 0;
+      case SleepQuality.POOR:
+        return 1;
+      case SleepQuality.FAIR:
+        return 2;
+      case SleepQuality.GOOD:
+        return 3;
+      case SleepQuality.EXCELLENT:
+        return 4;
+      default:
+        return 0;
     }
   }
 }

@@ -46,11 +46,14 @@ export class NutritionService {
     private readonly loggerService: LoggerService,
   ) {}
 
-  async create(userId: number, createNutritionMetricDto: CreateNutritionMetricDto): Promise<NutritionMetric> {
+  async create(
+    userId: number,
+    createNutritionMetricDto: CreateNutritionMetricDto,
+  ): Promise<NutritionMetric> {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/create',
-      action: 'create_nutrition_metric'
+      action: 'create_nutrition_metric',
     };
 
     try {
@@ -60,22 +63,27 @@ export class NutritionService {
         userId,
       });
 
-      const savedNutritionMetric = await this.nutritionMetricRepository.save(nutritionMetric);
-      
+      const savedNutritionMetric =
+        await this.nutritionMetricRepository.save(nutritionMetric);
+
       this.loggerService.info('Nutrition metric created successfully', {
         ...logContext,
         nutritionMetricId: savedNutritionMetric.id,
-        mealType: savedNutritionMetric.mealType
+        mealType: savedNutritionMetric.mealType,
       });
-      
+
       this.loggerService.logDataAccess('create', 'nutrition_metric', {
         ...logContext,
-        nutritionMetricId: savedNutritionMetric.id
+        nutritionMetricId: savedNutritionMetric.id,
       });
 
       return savedNutritionMetric;
     } catch (error) {
-      this.loggerService.error('Failed to create nutrition metric', error, logContext);
+      this.loggerService.error(
+        'Failed to create nutrition metric',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to create nutrition metric: ${error.message}`);
     }
   }
@@ -85,12 +93,12 @@ export class NutritionService {
     startDate?: string,
     endDate?: string,
     mealType?: MealType,
-    limit?: number
+    limit?: number,
   ): Promise<NutritionMetric[]> {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/find-all',
-      action: 'fetch_nutrition_metrics'
+      action: 'fetch_nutrition_metrics',
     };
 
     try {
@@ -101,10 +109,13 @@ export class NutritionService {
         .addOrderBy('nutrition.createdAt', 'DESC');
 
       if (startDate && endDate) {
-        queryBuilder.andWhere('nutrition.date BETWEEN :startDate AND :endDate', {
-          startDate: new Date(startDate),
-          endDate: new Date(endDate)
-        });
+        queryBuilder.andWhere(
+          'nutrition.date BETWEEN :startDate AND :endDate',
+          {
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+          },
+        );
       }
 
       if (mealType) {
@@ -116,20 +127,24 @@ export class NutritionService {
       }
 
       const results = await queryBuilder.getMany();
-      
+
       this.loggerService.info(`Retrieved ${results.length} nutrition metrics`, {
         ...logContext,
-        mealType: mealType || 'all'
+        mealType: mealType || 'all',
       });
-      
+
       this.loggerService.logDataAccess('read', 'nutrition_metric', {
         ...logContext,
-        recordCount: results.length
+        recordCount: results.length,
       });
 
       return results;
     } catch (error) {
-      this.loggerService.error('Failed to fetch nutrition metrics', error, logContext);
+      this.loggerService.error(
+        'Failed to fetch nutrition metrics',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to fetch nutrition metrics: ${error.message}`);
     }
   }
@@ -138,30 +153,30 @@ export class NutritionService {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/find-one',
-      action: 'fetch_nutrition_metric'
+      action: 'fetch_nutrition_metric',
     };
 
     try {
       const nutritionMetric = await this.nutritionMetricRepository.findOne({
-        where: { id, userId }
+        where: { id, userId },
       });
 
       if (!nutritionMetric) {
         this.loggerService.warn('Nutrition metric not found', {
           ...logContext,
-          nutritionMetricId: id
+          nutritionMetricId: id,
         });
         throw new NotFoundException('Nutrition metric not found');
       }
 
       this.loggerService.info('Nutrition metric retrieved successfully', {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
-      
+
       this.loggerService.logDataAccess('read', 'nutrition_metric', {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
 
       return nutritionMetric;
@@ -171,17 +186,21 @@ export class NutritionService {
       }
       this.loggerService.error('Failed to fetch nutrition metric', error, {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
       throw new Error(`Failed to fetch nutrition metric: ${error.message}`);
     }
   }
 
-  async update(id: number, userId: number, updateNutritionMetricDto: UpdateNutritionMetricDto): Promise<NutritionMetric> {
+  async update(
+    id: number,
+    userId: number,
+    updateNutritionMetricDto: UpdateNutritionMetricDto,
+  ): Promise<NutritionMetric> {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/update',
-      action: 'update_nutrition_metric'
+      action: 'update_nutrition_metric',
     };
 
     try {
@@ -189,20 +208,22 @@ export class NutritionService {
 
       const updateData = {
         ...updateNutritionMetricDto,
-        date: updateNutritionMetricDto.date ? new Date(updateNutritionMetricDto.date) : nutritionMetric.date,
+        date: updateNutritionMetricDto.date
+          ? new Date(updateNutritionMetricDto.date)
+          : nutritionMetric.date,
       };
 
       await this.nutritionMetricRepository.update(id, updateData);
       const updatedNutritionMetric = await this.findOne(id, userId);
-      
+
       this.loggerService.info('Nutrition metric updated successfully', {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
-      
+
       this.loggerService.logDataAccess('update', 'nutrition_metric', {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
 
       return updatedNutritionMetric;
@@ -212,7 +233,7 @@ export class NutritionService {
       }
       this.loggerService.error('Failed to update nutrition metric', error, {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
       throw new Error(`Failed to update nutrition metric: ${error.message}`);
     }
@@ -222,21 +243,21 @@ export class NutritionService {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/remove',
-      action: 'delete_nutrition_metric'
+      action: 'delete_nutrition_metric',
     };
 
     try {
-      const nutritionMetric = await this.findOne(id, userId);
+      await this.findOne(id, userId);
       await this.nutritionMetricRepository.delete(id);
-      
+
       this.loggerService.info('Nutrition metric deleted successfully', {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
-      
+
       this.loggerService.logDataAccess('delete', 'nutrition_metric', {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -244,17 +265,20 @@ export class NutritionService {
       }
       this.loggerService.error('Failed to delete nutrition metric', error, {
         ...logContext,
-        nutritionMetricId: id
+        nutritionMetricId: id,
       });
       throw new Error(`Failed to delete nutrition metric: ${error.message}`);
     }
   }
 
-  async getDailySummary(userId: number, date: string): Promise<DailyNutritionSummary> {
+  async getDailySummary(
+    userId: number,
+    date: string,
+  ): Promise<DailyNutritionSummary> {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/daily-summary',
-      action: 'calculate_daily_nutrition_summary'
+      action: 'calculate_daily_nutrition_summary',
     };
 
     try {
@@ -262,19 +286,19 @@ export class NutritionService {
       const nutritionMetrics = await this.nutritionMetricRepository.find({
         where: {
           userId,
-          date: targetDate
-        }
+          date: targetDate,
+        },
       });
 
       this.loggerService.info('Daily nutrition summary calculation initiated', {
         ...logContext,
         date: date,
-        recordsFound: nutritionMetrics.length
+        recordsFound: nutritionMetrics.length,
       });
-      
+
       this.loggerService.logDataAccess('read', 'nutrition_metric_summary', {
         ...logContext,
-        recordCount: nutritionMetrics.length
+        recordCount: nutritionMetrics.length,
       });
 
       const summary: DailyNutritionSummary = {
@@ -293,10 +317,10 @@ export class NutritionService {
           [MealType.DINNER]: { calories: 0, count: 0 },
           [MealType.SNACK]: { calories: 0, count: 0 },
           [MealType.DRINK]: { calories: 0, count: 0 },
-        }
+        },
       };
 
-      nutritionMetrics.forEach(metric => {
+      nutritionMetrics.forEach((metric) => {
         summary.totalCalories += metric.calories || 0;
         summary.totalProtein += metric.protein || 0;
         summary.totalCarbs += metric.carbs || 0;
@@ -311,29 +335,41 @@ export class NutritionService {
       });
 
       // Round all values to 2 decimal places
-      Object.keys(summary).forEach(key => {
+      Object.keys(summary).forEach((key) => {
         if (typeof summary[key] === 'number') {
           summary[key] = Math.round(summary[key] * 100) / 100;
         }
       });
 
-      this.loggerService.info('Daily nutrition summary calculated successfully', {
-        ...logContext,
-        summaryGenerated: true
-      });
+      this.loggerService.info(
+        'Daily nutrition summary calculated successfully',
+        {
+          ...logContext,
+          summaryGenerated: true,
+        },
+      );
 
       return summary;
     } catch (error) {
-      this.loggerService.error('Failed to get daily nutrition summary', error, logContext);
-      throw new Error(`Failed to get daily nutrition summary: ${error.message}`);
+      this.loggerService.error(
+        'Failed to get daily nutrition summary',
+        error,
+        logContext,
+      );
+      throw new Error(
+        `Failed to get daily nutrition summary: ${error.message}`,
+      );
     }
   }
 
-  async getStats(userId: number, days: number = 30): Promise<NutritionStatsResponse> {
+  async getStats(
+    userId: number,
+    days: number = 30,
+  ): Promise<NutritionStatsResponse> {
     const logContext = {
       userId,
       endpoint: 'health/nutrition/stats',
-      action: 'calculate_nutrition_stats'
+      action: 'calculate_nutrition_stats',
     };
 
     try {
@@ -344,23 +380,26 @@ export class NutritionService {
       const nutritionMetrics = await this.nutritionMetricRepository.find({
         where: {
           userId,
-          date: Between(startDate, endDate)
-        }
+          date: Between(startDate, endDate),
+        },
       });
 
       this.loggerService.info('Nutrition stats calculation initiated', {
         ...logContext,
         daysRequested: days,
-        recordsFound: nutritionMetrics.length
+        recordsFound: nutritionMetrics.length,
       });
-      
+
       this.loggerService.logDataAccess('read', 'nutrition_metric_stats', {
         ...logContext,
-        recordCount: nutritionMetrics.length
+        recordCount: nutritionMetrics.length,
       });
 
       if (nutritionMetrics.length === 0) {
-        this.loggerService.warn('No nutrition data found for stats calculation', logContext);
+        this.loggerService.warn(
+          'No nutrition data found for stats calculation',
+          logContext,
+        );
         return {
           averageDailyCalories: 0,
           averageDailyProtein: 0,
@@ -368,20 +407,23 @@ export class NutritionService {
           averageDailyFats: 0,
           averageDailyWater: 0,
           totalDays: 0,
-          macroBreakdown: { protein: 0, carbs: 0, fats: 0 }
+          macroBreakdown: { protein: 0, carbs: 0, fats: 0 },
         };
       }
 
       // Group by date
-      const dailyTotals = new Map<string, {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fats: number;
-        water: number;
-      }>();
+      const dailyTotals = new Map<
+        string,
+        {
+          calories: number;
+          protein: number;
+          carbs: number;
+          fats: number;
+          water: number;
+        }
+      >();
 
-      nutritionMetrics.forEach(metric => {
+      nutritionMetrics.forEach((metric) => {
         const dateKey = metric.date.toISOString().split('T')[0];
         if (!dailyTotals.has(dateKey)) {
           dailyTotals.set(dateKey, {
@@ -389,7 +431,7 @@ export class NutritionService {
             protein: 0,
             carbs: 0,
             fats: 0,
-            water: 0
+            water: 0,
           });
         }
 
@@ -408,9 +450,9 @@ export class NutritionService {
           protein: acc.protein + daily.protein,
           carbs: acc.carbs + daily.carbs,
           fats: acc.fats + daily.fats,
-          water: acc.water + daily.water
+          water: acc.water + daily.water,
         }),
-        { calories: 0, protein: 0, carbs: 0, fats: 0, water: 0 }
+        { calories: 0, protein: 0, carbs: 0, fats: 0, water: 0 },
       );
 
       const averageProtein = totals.protein / daysCount;
@@ -429,21 +471,30 @@ export class NutritionService {
         averageDailyFats: Math.round(averageFats * 100) / 100,
         averageDailyWater: Math.round(totals.water / daysCount),
         totalDays: daysCount,
-        macroBreakdown: totalMacroCalories > 0 ? {
-          protein: Math.round((proteinCalories / totalMacroCalories) * 100),
-          carbs: Math.round((carbCalories / totalMacroCalories) * 100),
-          fats: Math.round((fatCalories / totalMacroCalories) * 100)
-        } : { protein: 0, carbs: 0, fats: 0 }
+        macroBreakdown:
+          totalMacroCalories > 0
+            ? {
+                protein: Math.round(
+                  (proteinCalories / totalMacroCalories) * 100,
+                ),
+                carbs: Math.round((carbCalories / totalMacroCalories) * 100),
+                fats: Math.round((fatCalories / totalMacroCalories) * 100),
+              }
+            : { protein: 0, carbs: 0, fats: 0 },
       };
 
       this.loggerService.info('Nutrition stats calculated successfully', {
         ...logContext,
-        statsGenerated: true
+        statsGenerated: true,
       });
 
       return stats;
     } catch (error) {
-      this.loggerService.error('Failed to calculate nutrition stats', error, logContext);
+      this.loggerService.error(
+        'Failed to calculate nutrition stats',
+        error,
+        logContext,
+      );
       throw new Error(`Failed to calculate nutrition stats: ${error.message}`);
     }
   }
