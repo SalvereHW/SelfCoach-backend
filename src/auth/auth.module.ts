@@ -7,8 +7,24 @@ import { JwtService } from './jwt.service.js';
 
 
 @Module({
-  imports: [ConfigModule, forwardRef(() => UserModule)],
-  providers: [AuthGuard, AuthService, JwtService],
-  exports: [AuthGuard, AuthService, JwtService],
+  imports: [
+    ConfigModule, 
+    forwardRef(() => UserModule),
+  ],
+  providers: [
+    {
+      provide: 'AUTH_GUARD',
+      useClass: AuthGuard,
+    },
+    AuthGuard,
+    AuthService, 
+    JwtService,
+  ],
+  exports: [
+    'AUTH_GUARD',
+    AuthGuard,
+    AuthService, 
+    JwtService,
+  ],
 })
 export class AuthModule {}
