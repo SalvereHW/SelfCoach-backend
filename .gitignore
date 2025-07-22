@@ -33,6 +33,10 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.adminjs
 
+# Environment files
 .env
+!.env.example
+
+# AdminJS
+.adminjs
