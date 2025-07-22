@@ -22,6 +22,8 @@ import { ReminderAction } from './reminders/entities/reminder-action.entity.js';
 import { WellnessModule } from './wellness/wellness.module.js';
 import { WellnessSession } from './wellness/entities/wellness-session.entity.js';
 import { SessionProgress } from './wellness/entities/session-progress.entity.js';
+import { AiInsightsModule } from './ai-insights/ai-insights.module.js';
+import { AiInsight } from './ai-insights/entities/ai-insight.entity.js';
 import { LoggingModule } from './common/logging/logging.module.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -64,7 +66,7 @@ const authenticate = async (email: string, password: string) => {
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [User, SleepMetric, NutritionMetric, ActivityMetric, DailySummary, Reminder, ReminderAction, WellnessSession, SessionProgress],
+        entities: [User, SleepMetric, NutritionMetric, ActivityMetric, DailySummary, Reminder, ReminderAction, WellnessSession, SessionProgress, AiInsight],
         synchronize: true,
       }),
     }),
@@ -94,6 +96,7 @@ const authenticate = async (email: string, password: string) => {
     HealthModule,
     RemindersModule,
     WellnessModule,
+    AiInsightsModule,
   ],
   controllers: [AppController],
   providers: [
