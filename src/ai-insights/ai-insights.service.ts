@@ -12,11 +12,7 @@ import { SleepMetric } from '../health/sleep/sleep-metric.entity.js';
 import { NutritionMetric } from '../health/nutrition/nutrition-metric.entity.js';
 import { User } from '../user/entities/user.entity.js';
 
-interface GenerationLimitCheck {
-  canGenerate: boolean;
-  nextAvailableTime?: Date;
-  remainingGenerations: number;
-}
+import { GenerationLimitCheck } from './types/ai-insights.types.js';
 
 @Injectable()
 export class AiInsightsService {

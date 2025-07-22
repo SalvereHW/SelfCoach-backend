@@ -14,6 +14,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AiInsightsService } from './ai-insights.service.js';
+import { GenerationLimitCheck } from './types/ai-insights.types.js';
 import { CreateAiInsightDto } from './dto/create-ai-insight.dto.js';
 import { UpdateAiInsightDto } from './dto/update-ai-insight.dto.js';
 import { GenerateInsightDto } from './dto/generate-insight.dto.js';
@@ -59,7 +60,7 @@ export class AiInsightsController {
   }
 
   @Get('generation-status')
-  checkGenerationLimit(@Request() req) {
+  checkGeneration(@Request() req): Promise<GenerationLimitCheck> {
     return this.aiInsightsService.checkGenerationLimit(req.user.sub);
   }
 
