@@ -21,6 +21,7 @@ export enum ActivityType {
   CYCLING = 'cycling',
   SWIMMING = 'swimming',
   YOGA = 'yoga',
+  GYM = 'gym',
   PILATES = 'pilates',
   DANCE = 'dance',
   HIKING = 'hiking',
@@ -167,6 +168,8 @@ export class ActivityMetric extends BaseEntity {
         return 5.0;
       case ActivityType.HIKING:
         return 6.0;
+      case ActivityType.GYM:
+        return 5.0;
       default:
         return 4.0;
     }
